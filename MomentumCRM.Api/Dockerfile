@@ -9,10 +9,10 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy project file using the relative path from the context
-COPY ["Api/Api.csproj", "Api/"]
-RUN dotnet restore "Api/Api.csproj"
+COPY ["MomentumCRM.Api/Api.csproj", "MomentumCRM.Api/"]
+RUN dotnet restore "MomentumCRM.Api/Api.csproj"
 COPY . .
-WORKDIR "/src/Api"
+WORKDIR "/src/MomentumCRM.Api"
 RUN dotnet build "Api.csproj" -c Release -o /app/build
 
 # Publish stage
