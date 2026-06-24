@@ -1,0 +1,30 @@
+# Target directories (Build output)
+**/bin/
+**/obj/
+**/out/
+
+# AppBundle / Publish outputs
+/**/Publish/
+*.[Pp]ubxml
+*.pubxml.user
+
+# Look for user secrets and local config overrides
+appsettings.Development.json
+appsettings.Local.json
+UserSecretsId
+
+# Avoid tracking machine-specific developer settings
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Podman / Docker local runtime overrides 
+# (Keeps your base compose.yaml in git, but ignores personal tweaks)
+docker-compose.override.yml
+
+# Operating system noise
+.DS_Store
+Thumbs.db
