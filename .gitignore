@@ -20,6 +20,7 @@ UserSecretsId
 *.user
 *.userosscache
 *.sln.docstates
+.claude
 
 # Podman / Docker local runtime overrides 
 # (Keeps your base compose.yaml in git, but ignores personal tweaks)

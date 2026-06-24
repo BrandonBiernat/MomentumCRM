@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/MomentumCRM.Api/">
+    <Project Path="MomentumCRM.Api/Api.csproj" />
+  </Folder>
+  <Project Path="MomentumCRM.Persistence/MomentumCRM.Persistence.csproj" />
+</Solution>
