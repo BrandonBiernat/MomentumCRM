@@ -1,6 +1,7 @@
 using Api;
 using Microsoft.EntityFrameworkCore;
 using MomentumCRM.Persistence.Contexts;
+using MomentumCRM.Services.Customers;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -27,6 +28,8 @@ try {
 
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
+
+    builder.Services.AddScoped<ICustomersService, CustomerService>();
 
     var app = builder.Build();
 
