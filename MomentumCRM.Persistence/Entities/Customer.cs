@@ -12,7 +12,7 @@ public readonly record struct CustomerId(Guid Value) {
         id => id.Value,
         value => new CustomerId(value)) {
     }
-} 
+}
 
 public class Customer : IEntity<CustomerId>, IAuditable {
     public CustomerId Id { get; private set; }
