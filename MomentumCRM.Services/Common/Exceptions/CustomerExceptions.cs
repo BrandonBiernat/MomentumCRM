@@ -1,5 +1,3 @@
-using MomentumCRM.Persistence.Entities;
-
 namespace MomentumCRM.Services.Common.Exceptions;
 
 public class CustomerAlreadyExistsException(string email) :
@@ -7,3 +5,6 @@ public class CustomerAlreadyExistsException(string email) :
 
 public class CustomerNotFoundException(Guid id) :
     Exception($"Customer with id '{id}' was not found");
+
+public class CustomerHasNoContactInfoException() :
+    Exception($"Customer must have a phone number or email");

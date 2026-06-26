@@ -12,6 +12,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         (int status, string? title) = exception switch {
             CustomerAlreadyExistsException => (StatusCodes.Status409Conflict, exception.Message),
             CustomerNotFoundException => (StatusCodes.Status404NotFound, "Customer not found"),
+            CustomerHasNoContactInfoException => (StatusCodes.Status400BadRequest, exception.Message),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred")
         };
 

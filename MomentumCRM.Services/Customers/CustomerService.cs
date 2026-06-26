@@ -10,15 +10,21 @@ public class CustomerService(MomentumCrmDbContext db) : ICustomersService {
     public async Task<CustomerResponse> CreateAsync(
         CreateCustomerRequest request,
         CancellationToken ct = default) {
+        if (request.Email is null && request.Phone is null)
+            throw new CustomerHasNoContactInfoException();
+
         bool emailInUse = await
             db.Customers.AnyAsync(c => c.Email == request.Email, ct);
 
         if (emailInUse && request.Email is not null)
             throw new CustomerAlreadyExistsException(request.Email);
-
+        
         Customer newCustomer = new(
             name: request.Name,
-            email: request.Email);
+            type: request.Type,
+            email: request.Email,
+            phone: request.Phone,
+            source: request.Source);
 
         db.Customers.Add(newCustomer);
         await db.SaveChangesAsync(ct);
@@ -36,6 +42,10 @@ public class CustomerService(MomentumCrmDbContext db) : ICustomersService {
 
         customer.Rename(request.Name);
         customer.ChangeEmail(request.Email);
+        customer.ChangePhone(request.Phone);
+        customer.ChangeDomain(request.Domain);
+        customer.ChangeAddress(request.Address?.ToValueObject());
+        customer.ChangeSource(request.Source);
 
         await db.SaveChangesAsync(ct);
         return CustomerResponse.FromEntity(customer);

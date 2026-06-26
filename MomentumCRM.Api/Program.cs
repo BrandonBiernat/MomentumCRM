@@ -1,6 +1,8 @@
+using System.Text.Json.Serialization;
 using Api;
 using Microsoft.EntityFrameworkCore;
 using MomentumCRM.Persistence.Contexts;
+using MomentumCRM.Persistence.Enums.Customers;
 using MomentumCRM.Services.Customers;
 using Serilog;
 
@@ -14,13 +16,21 @@ try {
     string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new NullReferenceException("No connection string configured");
 
+    builder.Services.AddDbContext<MomentumCrmDbContext>(options =>
+        options.UseNpgsql(
+            connectionString: connectionString,
+            npgsqlOptionsAction: b => b.MigrationsAssembly("MomentumCRM.Persistence")
+                .MapEnum<CustomerStatus>()
+                .MapEnum<CustomerType>()
+                .MapEnum<CustomerSource>()));
+
     builder.Services.AddSerilog((services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
         .ReadFrom.Services(services)
         .Enrich.FromLogContext());
 
-    builder.Services.AddDbContext<MomentumCrmDbContext>(options =>
-        options.UseNpgsql(connectionString, b => b.MigrationsAssembly("MomentumCRM.Persistence")));
+    builder.Services.ConfigureHttpJsonOptions(o => 
+        o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
     builder.Services.AddOpenApi();
     builder.Services.AddControllers();
