@@ -15,10 +15,19 @@ public record UpdateAddressRequest(
         new(Street, City, State, PostalCode, Country);
 };
 
+public record UpdatePhoneRequest(
+    [Phone] string Number,
+    string? Extension
+) {
+    public Phone ToValueObject() =>
+        Phone.Create(Number, Extension);
+}
+
 public record UpdateCustomerRequest(
     [Required] string Name,
+    [Required] CustomerType Type,
     [EmailAddress] string? Email,
-    [Phone] string? Phone,
+    UpdatePhoneRequest? Phone,
     string? Domain,
     UpdateAddressRequest? Address,
     CustomerSource? Source

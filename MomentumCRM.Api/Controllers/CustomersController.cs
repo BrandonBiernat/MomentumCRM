@@ -23,7 +23,7 @@ namespace Api.Controllers {
             CancellationToken ct) => Ok(await customers.UpdateAsync(id, request, ct));
             
         [HttpGet]
-        public async Task<ActionResult<CustomerResponse>> GetAll(CancellationToken ct) =>
+        public async Task<ActionResult<IReadOnlyList<CustomerResponse>>> GetAll(CancellationToken ct) =>
             Ok(await customers.GetAllAsync(ct));
 
         [HttpGet("{id:guid}")]

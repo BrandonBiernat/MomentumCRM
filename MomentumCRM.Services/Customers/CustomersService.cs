@@ -6,24 +6,25 @@ using MomentumCRM.Services.Customers.Dtos;
 
 namespace MomentumCRM.Services.Customers;
 
-public class CustomerService(MomentumCrmDbContext db) : ICustomersService {
+public class CustomersService(MomentumCrmDbContext db) : ICustomersService {
     public async Task<CustomerResponse> CreateAsync(
         CreateCustomerRequest request,
         CancellationToken ct = default) {
-        if (request.Email is null && request.Phone is null)
+        if (string.IsNullOrWhiteSpace(request.Email) && request.Phone is null)
             throw new CustomerHasNoContactInfoException();
 
-        bool emailInUse = await
-            db.Customers.AnyAsync(c => c.Email == request.Email, ct);
-
-        if (emailInUse && request.Email is not null)
-            throw new CustomerAlreadyExistsException(request.Email);
+        if (!string.IsNullOrWhiteSpace(request.Email)) {
+            bool emailInUse = await
+                db.Customers.AnyAsync(c => c.Email == request.Email, ct);
+            if (emailInUse)
+                throw new CustomerAlreadyExistsException(request.Email);
+        }
         
         Customer newCustomer = new(
             name: request.Name,
             type: request.Type,
             email: request.Email,
-            phone: request.Phone,
+            phone: request.Phone?.ToValueObject(),
             source: request.Source);
 
         db.Customers.Add(newCustomer);
@@ -36,16 +37,28 @@ public class CustomerService(MomentumCrmDbContext db) : ICustomersService {
         Guid id,
         UpdateCustomerRequest request,
         CancellationToken ct = default) {
-        Customer customer = await
-            db.Customers.FindAsync([new CustomerId(id)], ct)
+        Customer customer = await db.Customers
+            .FindAsync([new CustomerId(id)], ct)
                 ?? throw new CustomerNotFoundException(id);
+
+        if (string.IsNullOrWhiteSpace(request.Email) && request.Phone is null)
+            throw new CustomerHasNoContactInfoException();
+
+        if (!string.IsNullOrWhiteSpace(request.Email)) {
+            bool emailExists = await db.Customers
+                .AnyAsync(c =>
+                    c.Email == request.Email &&
+                    c.Id != customer.Id, ct);
+            if (emailExists)
+                throw new CustomerAlreadyExistsException(request.Email);
+        }
 
         customer.Rename(request.Name);
         customer.ChangeEmail(request.Email);
-        customer.ChangePhone(request.Phone);
+        customer.ChangePhone(request.Phone?.ToValueObject());
         customer.ChangeDomain(request.Domain);
         customer.ChangeAddress(request.Address?.ToValueObject());
-        customer.ChangeSource(request.Source);
+        customer.ChangeType(request.Type);
 
         await db.SaveChangesAsync(ct);
         return CustomerResponse.FromEntity(customer);

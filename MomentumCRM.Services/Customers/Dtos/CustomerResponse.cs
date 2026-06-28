@@ -14,15 +14,23 @@ public record AddressResponse(
         new(address.Street, address.City, address.State, address.PostalCode, address.Country);
 }
 
+public record PhoneResponse(
+    string Number,
+    string? Extension
+) {
+    public static PhoneResponse FromValueObject(Phone phone) =>
+        new(phone.Number, phone.Extension);
+}
+
 public record CustomerResponse(
     Guid Id,
     string Name,
     string? Email,
-    string? Phone,
+    PhoneResponse? Phone,
     string? Domain,
     AddressResponse? Address,
     CustomerType Type,
-    CustomerSource? Source,
+    CustomerSource Source,
     CustomerStatus Status,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc
@@ -32,7 +40,9 @@ public record CustomerResponse(
             c.Id.Value,
             c.Name,
             c.Email,
-            c.Phone,
+            c.Phone is not null
+                ? PhoneResponse.FromValueObject(c.Phone)
+                : null,
             c.Domain,
             c.Address is not null
                 ? AddressResponse.FromValueObject(c.Address)

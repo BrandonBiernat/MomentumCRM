@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using MomentumCRM.Persistence.Abstractions;
 using MomentumCRM.Persistence.Entities;
 using MomentumCRM.Persistence.Enums.Customers;
 
@@ -9,6 +11,22 @@ public class MomentumCrmDbContext : DbContext {
     protected MomentumCrmDbContext() { }
 
     public DbSet<Customer> Customers => Set<Customer>();
+
+    public override int SaveChanges() {
+        StampAuditTimestamps();
+        return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken ct = default) {
+        StampAuditTimestamps();
+        return base.SaveChangesAsync(ct);
+    }
+
+    private void StampAuditTimestamps() {
+        foreach (EntityEntry<IAuditable> entry in ChangeTracker.Entries<IAuditable>())
+            if (entry.State == EntityState.Modified)
+                entry.Property(nameof(IAuditable.UpdatedAtUtc)).CurrentValue = DateTime.UtcNow;
+    }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder) {
         // Customer
@@ -21,10 +39,8 @@ public class MomentumCrmDbContext : DbContext {
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         // Entities
         modelBuilder.Entity<Customer>().OwnsOne(c => c.Address);
-
-        // Enums
-        modelBuilder.HasPostgresEnum<CustomerStatus>();
-        modelBuilder.HasPostgresEnum<CustomerType>();
-        modelBuilder.HasPostgresEnum<CustomerSource>();
+        modelBuilder.Entity<Customer>().OwnsOne(c => c.Phone);
+        modelBuilder.Entity<Customer>().HasIndex(c => c.Email).IsUnique();
+        modelBuilder.Entity<Customer>().HasIndex(c => c.Domain).IsUnique();
     }
 }

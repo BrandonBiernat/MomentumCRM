@@ -2,7 +2,6 @@ using System.Text.Json.Serialization;
 using Api;
 using Microsoft.EntityFrameworkCore;
 using MomentumCRM.Persistence.Contexts;
-using MomentumCRM.Persistence.Enums.Customers;
 using MomentumCRM.Services.Customers;
 using Serilog;
 
@@ -19,10 +18,7 @@ try {
     builder.Services.AddDbContext<MomentumCrmDbContext>(options =>
         options.UseNpgsql(
             connectionString: connectionString,
-            npgsqlOptionsAction: b => b.MigrationsAssembly("MomentumCRM.Persistence")
-                .MapEnum<CustomerStatus>()
-                .MapEnum<CustomerType>()
-                .MapEnum<CustomerSource>()));
+            npgsqlOptionsAction: b => b.MigrationsAssembly("MomentumCRM.Persistence")));
 
     builder.Services.AddSerilog((services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
@@ -39,7 +35,7 @@ try {
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
 
-    builder.Services.AddScoped<ICustomersService, CustomerService>();
+    builder.Services.AddScoped<ICustomersService, CustomersService>();
 
     var app = builder.Build();
 
