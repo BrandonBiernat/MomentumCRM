@@ -11,6 +11,8 @@ namespace MomentumCRM.Persistence.Contexts;
 public class AuthDbContext(
     DbContextOptions<AuthDbContext> options,
     ICurrentUser currentUser) : IdentityDbContext<User, IdentityRole<Guid>, Guid>(options) {
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
     public override int SaveChanges() {
         StampAudit();
         return base.SaveChanges();
@@ -37,9 +39,20 @@ public class AuthDbContext(
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder) {
         configurationBuilder.Properties<UserRole>().HaveConversion<string>().HaveMaxLength(20);
+        configurationBuilder.Properties<RefreshTokenId>().HaveConversion<RefreshTokenId.EFConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder builder) {
         base.OnModelCreating(builder);
+
+        builder.Entity<RefreshToken>(token => {
+            token.Property(t => t.TokenHash).HasMaxLength(64);
+            token.HasIndex(t => t.TokenHash).IsUnique();
+            token.HasIndex(t => t.UserId);
+            token.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

@@ -14,6 +14,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             // Auth
             EmailAlreadyInUseException => (StatusCodes.Status409Conflict, exception.Message),
             InvalidCredentialsException => (StatusCodes.Status401Unauthorized, exception.Message),
+            InvalidRefreshTokenException => (StatusCodes.Status401Unauthorized, exception.Message),
             IdentityException => (StatusCodes.Status400BadRequest, exception.Message),
 
             // Customers

@@ -17,7 +17,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateBootstrapLogger();
 
 try {
-    var builder = WebApplication.CreateBuilder(args);
+    WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
     string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new NullReferenceException("No connection string configured");
@@ -52,7 +52,9 @@ try {
         o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
     builder.Services.AddOpenApi();
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .AddJsonOptions(o =>
+            o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
     builder.Services.AddHealthChecks();
 
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -84,6 +86,7 @@ try {
     builder.Services.AddCors(options =>
         options.AddPolicy("ReactClient", policy => policy
             .WithOrigins("http://localhost:5173", "http://localhost:3000")
+            .AllowCredentials()
             .AllowAnyHeader()
             .AllowAnyMethod()));
 
@@ -94,7 +97,7 @@ try {
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<ICustomersService, CustomersService>();
 
-    var app = builder.Build();
+    WebApplication app = builder.Build();
 
     app.UseSerilogRequestLogging();
 

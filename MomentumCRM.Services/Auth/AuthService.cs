@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using MomentumCRM.Persistence.Contexts;
 using MomentumCRM.Persistence.Entities;
 using MomentumCRM.Services.Auth.Dtos;
 using MomentumCRM.Services.Common.Exceptions;
@@ -7,42 +10,113 @@ namespace MomentumCRM.Services.Auth;
 
 public class AuthService(
     UserManager<User> userManager,
-    ITokenService tokenService) : IAuthService {
+    ITokenService tokenService,
+    AuthDbContext db,
+    IOptions<JwtOptions> jwtOptions) : IAuthService {
 
-    public async Task<AuthResponse> RegisterAsync(
+    private readonly JwtOptions _jwt = jwtOptions.Value;
+
+    public async Task<AuthResult> RegisterAsync(
         RegisterRequest request,
         CancellationToken ct = default) {
-        User? existing = await userManager
-            .FindByEmailAsync(request.Email);
+        User? existing = await userManager.FindByEmailAsync(request.Email);
         if (existing is not null)
             throw new EmailAlreadyInUseException(request.Email);
 
-        User user = new(
-            email: request.Email,
-            displayName: request.DisplayName);
+        User user = new(email: request.Email, displayName: request.DisplayName);
 
-        IdentityResult result = await userManager
-            .CreateAsync(user, request.Password);
+        IdentityResult result = await userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
             throw new IdentityException(result.Errors.Select(e => e.Description));
 
-        AccessToken token = tokenService.CreateAccessToken(user);
-        return AuthResponse.FromToken(user, token);
+        return await IssueTokensAsync(user, ct);
     }
 
-    public async Task<AuthResponse> LoginAsync(
+    public async Task<AuthResult> LoginAsync(
         LoginRequest request,
         CancellationToken ct = default) {
-        User user = await userManager
-            .FindByEmailAsync(request.Email)
-                ?? throw new InvalidCredentialsException();
+        User user = await userManager.FindByEmailAsync(request.Email)
+            ?? throw new InvalidCredentialsException();
 
-        bool passwordValid = await userManager
-            .CheckPasswordAsync(user, request.Password);
+        bool passwordValid = await userManager.CheckPasswordAsync(user, request.Password);
         if (!passwordValid)
             throw new InvalidCredentialsException();
 
-        AccessToken token = tokenService.CreateAccessToken(user);
-        return AuthResponse.FromToken(user, token);
+        return await IssueTokensAsync(user, ct);
+    }
+
+    public async Task<AuthResult> RefreshAsync(
+        string refreshToken,
+        CancellationToken ct = default) {
+        string hash = tokenService.HashRefreshToken(refreshToken);
+        RefreshToken? stored = await db.RefreshTokens
+            .FirstOrDefaultAsync(t => t.TokenHash == hash, ct) 
+                ?? throw new InvalidRefreshTokenException();
+
+        if (stored.RevokedAtUtc is not null) {
+            await RevokeAllActiveAsync(stored.UserId, ct);
+            throw new InvalidRefreshTokenException();
+        }
+
+        if (DateTime.UtcNow >= stored.ExpiresAtUtc)
+            throw new InvalidRefreshTokenException();
+
+        User user = await userManager.FindByIdAsync(stored.UserId.ToString())
+            ?? throw new InvalidRefreshTokenException();
+
+        return await IssueTokensAsync(user, ct, rotatedFrom: stored);
+    }
+
+    public async Task LogoutAsync(
+        string refreshToken,
+        CancellationToken ct = default) {
+        string hash = tokenService.HashRefreshToken(refreshToken);
+        RefreshToken? stored = await db.RefreshTokens
+            .FirstOrDefaultAsync(t => t.TokenHash == hash, ct);
+
+        if (stored is not null && stored.RevokedAtUtc is null) {
+            stored.Revoke();
+            await db.SaveChangesAsync(ct);
+        }
+    }
+
+    private async Task<AuthResult> IssueTokensAsync(
+        User user,
+        CancellationToken ct,
+        RefreshToken? rotatedFrom = null) {
+        AccessToken access = tokenService.CreateAccessToken(user);
+
+        string rawRefresh = tokenService.CreateRefreshToken();
+        DateTime refreshExpiry = DateTime.UtcNow.AddDays(_jwt.RefreshTokenDays);
+        RefreshToken newToken = new(
+            userId: user.Id,
+            tokenHash: tokenService.HashRefreshToken(rawRefresh),
+            expiresAtUtc: refreshExpiry);
+        db.RefreshTokens.Add(newToken);
+
+        rotatedFrom?.Revoke(newToken.Id);
+
+        await db.SaveChangesAsync(ct);
+
+        return new AuthResult(
+            UserId: user.Id,
+            Email: user.Email!,
+            DisplayName: user.DisplayName,
+            Role: user.Role.ToString(),
+            AccessToken: access.Value,
+            AccessTokenExpiresAtUtc: access.ExpiresAtUtc,
+            RefreshToken: rawRefresh,
+            RefreshTokenExpiresAtUtc: refreshExpiry);
+    }
+
+    private async Task RevokeAllActiveAsync(Guid userId, CancellationToken ct) {
+        List<RefreshToken> active = await db.RefreshTokens
+            .Where(t => t.UserId == userId && t.RevokedAtUtc == null)
+            .ToListAsync(ct);
+
+        foreach (RefreshToken token in active)
+            token.Revoke();
+
+        await db.SaveChangesAsync(ct);
     }
 }
