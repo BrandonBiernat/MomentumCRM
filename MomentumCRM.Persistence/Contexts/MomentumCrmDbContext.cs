@@ -7,25 +7,40 @@ using MomentumCRM.Persistence.Enums.Customers;
 namespace MomentumCRM.Persistence.Contexts;
 
 public class MomentumCrmDbContext : DbContext {
-    public MomentumCrmDbContext(DbContextOptions options) : base(options) { }
+    private readonly ICurrentUser? _currentUser;
+
+    public MomentumCrmDbContext(
+        DbContextOptions<MomentumCrmDbContext> options,
+        ICurrentUser currentUser) : base(options) {
+        _currentUser = currentUser;
+    }
+
     protected MomentumCrmDbContext() { }
 
     public DbSet<Customer> Customers => Set<Customer>();
 
     public override int SaveChanges() {
-        StampAuditTimestamps();
+        StampAudit();
         return base.SaveChanges();
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default) {
-        StampAuditTimestamps();
+        StampAudit();
         return base.SaveChangesAsync(ct);
     }
 
-    private void StampAuditTimestamps() {
-        foreach (EntityEntry<IAuditable> entry in ChangeTracker.Entries<IAuditable>())
-            if (entry.State == EntityState.Modified)
-                entry.Property(nameof(IAuditable.UpdatedAtUtc)).CurrentValue = DateTime.UtcNow;
+    private void StampAudit() {
+        Guid? userId = _currentUser?.Id;
+        DateTime nowUtc = DateTime.UtcNow;
+
+        foreach (EntityEntry<IAuditable> entry in ChangeTracker.Entries<IAuditable>()) {
+            if (entry.State == EntityState.Added) {
+                entry.Property(nameof(IAuditable.CreatedBy)).CurrentValue = userId;
+            } else if (entry.State == EntityState.Modified) {
+                entry.Property(nameof(IAuditable.UpdatedAtUtc)).CurrentValue = nowUtc;
+                entry.Property(nameof(IAuditable.UpdatedBy)).CurrentValue = userId;
+            }
+        }
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder) {

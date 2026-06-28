@@ -5,7 +5,7 @@ using MomentumCRM.Persistence.Enums.Customers;
 namespace MomentumCRM.Services.Customers.Dtos;
 
 public record CreatePhoneRequest(
-    [Phone] string Number,
+    [Required, Phone] string Number,
     string? Extension
 ) {
     public Phone ToValueObject() =>

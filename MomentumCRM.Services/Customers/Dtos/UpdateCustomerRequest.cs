@@ -16,7 +16,7 @@ public record UpdateAddressRequest(
 };
 
 public record UpdatePhoneRequest(
-    [Phone] string Number,
+    [Required, Phone] string Number,
     string? Extension
 ) {
     public Phone ToValueObject() =>

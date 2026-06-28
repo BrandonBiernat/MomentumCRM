@@ -11,6 +11,11 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         Exception exception,
         CancellationToken ct) {
         (int status, string? title) = exception switch {
+            // Auth
+            EmailAlreadyInUseException => (StatusCodes.Status409Conflict, exception.Message),
+            InvalidCredentialsException => (StatusCodes.Status401Unauthorized, exception.Message),
+            IdentityException => (StatusCodes.Status400BadRequest, exception.Message),
+
             // Customers
             CustomerAlreadyExistsException => (StatusCodes.Status409Conflict, exception.Message),
             CustomerNotFoundException => (StatusCodes.Status404NotFound, "Customer not found"),

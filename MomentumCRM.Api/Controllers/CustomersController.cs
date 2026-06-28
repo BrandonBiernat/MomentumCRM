@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MomentumCRM.Services.Customers;
 using MomentumCRM.Services.Customers.Dtos;
 
 namespace Api.Controllers {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CustomersController(ICustomersService customers) : ControllerBase {

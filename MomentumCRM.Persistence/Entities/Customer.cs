@@ -24,6 +24,8 @@ public class Customer : IEntity<CustomerId>, IAuditable {
     public CustomerType Type { get; private set; }
     public CustomerSource Source { get; private set; }
     public CustomerStatus Status { get; private set; }
+    public Guid? CreatedBy { get; private set; }
+    public Guid? UpdatedBy { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public DateTime? UpdatedAtUtc { get; private set; }
 
