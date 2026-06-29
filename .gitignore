@@ -31,3 +31,31 @@ docker-compose.override.yml
 Thumbs.db
 
 logs/
+
+# ---------------------------------------------------------------------------
+# React / Node web project (MomentumCRM.Web) — patterns are recursive
+# ---------------------------------------------------------------------------
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Vite / bundler caches
+.vite/
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Local env files (committed: .env, .env.development; ignored: *.local)
+.env.local
+.env.*.local
+
+# JS package manager debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test coverage / lint caches
+coverage/
+.eslintcache

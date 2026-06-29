@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-react-aria-components";
+
+/* Momentum design tokens. Ramp anchored on the logo's exact colors:
+   brand-600 #7e14ff (mark), brand-500 #863bff, brand-100 #ede6ff,
+   accent #47bfff (the arrow's blue wing). */
+@theme {
+  --color-brand-50: #f6f2ff;
+  --color-brand-100: #ede6ff;
+  --color-brand-200: #ddccff;
+  --color-brand-300: #c3a4ff;
+  --color-brand-400: #a266ff;
+  --color-brand-500: #863bff;
+  --color-brand-600: #7e14ff;
+  --color-brand-700: #6a0fd9;
+  --color-brand-800: #5811b0;
+  --color-brand-900: #491a8c;
+  --color-brand-950: #2c0a5e;
+
+  --color-accent-300: #7dd3ff;
+  --color-accent-400: #47bfff;
+  --color-accent-500: #1ea7f0;
+  --color-accent-600: #0d8ed6;
+}
