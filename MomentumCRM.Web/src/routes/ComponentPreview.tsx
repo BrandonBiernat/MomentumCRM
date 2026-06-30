@@ -166,7 +166,7 @@ const SelectableTableDemo = () => {
 }
 
 export const ComponentPreview = () => (
-  <div className="min-h-screen bg-slate-50 text-slate-900">
+  <div className="min-h-full bg-slate-50 text-slate-900">
     <div className="mx-auto max-w-4xl space-y-12 px-6 py-10">
       <header className="flex items-center justify-between border-b border-slate-200 pb-6">
         <img src={logoUrl} alt="Momentum" className="h-9" />

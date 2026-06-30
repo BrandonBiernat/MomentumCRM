@@ -24,6 +24,7 @@ export interface AuthUser {
   email: string
   displayName: string
   role: string
+  avatarUrl?: string
 }
 
 export interface AuthCredentials {
