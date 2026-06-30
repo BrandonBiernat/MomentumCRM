@@ -23,3 +23,39 @@
   --color-accent-500: #1ea7f0;
   --color-accent-600: #0d8ed6;
 }
+
+/* Spinner: a fading-tail donut with a rounded leading dot. Uses currentColor,
+   so it inherits text color (brand by default, white on filled buttons, etc.).
+   Thickness is proportional via --spinner-thickness (overridable per instance). */
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.spinner {
+  --spinner-thickness: 12%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(farthest-side, currentColor 94%, transparent)
+      top center / var(--spinner-thickness) var(--spinner-thickness) no-repeat,
+    conic-gradient(transparent 25%, currentColor);
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--spinner-thickness)),
+    #000 calc(100% - var(--spinner-thickness))
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--spinner-thickness)),
+    #000 calc(100% - var(--spinner-thickness))
+  );
+  animation: spinner-rotate 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 1.8s;
+  }
+}

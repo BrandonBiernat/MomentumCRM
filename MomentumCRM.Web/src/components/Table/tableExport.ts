@@ -70,19 +70,23 @@ export const exportTableToExcel = async <T,>(
 ): Promise<void> => {
   const { default: writeXlsxFile } = await import('write-excel-file/browser')
 
-  const schema = columns.map((col) => ({
-    column: col.header,
-    type: excelType(col.dataType),
-    value: (row: T) => excelValue(col, row),
-    format: excelFormat(col as TableColumn<unknown>),
+  // write-excel-file v4: option key is `columns` (was `schema`); each column is
+  // `header` + a `cell()` function returning { value, type, format } per row.
+  const excelColumns = columns.map((col) => ({
+    header: col.header,
     width: 22,
+    cell: (row: T) => ({
+      type: excelType(col.dataType),
+      value: excelValue(col, row),
+      format: excelFormat(col as TableColumn<unknown>),
+    }),
   }))
 
   const write = writeXlsxFile as unknown as (
     rows: T[],
-    options: { schema: typeof schema },
+    options: { columns: typeof excelColumns },
   ) => { toFile: (fileName: string) => Promise<void>; toBlob: () => Promise<Blob> }
 
   const outName = fileName.endsWith('.xlsx') ? fileName : `${fileName}.xlsx`
-  await write(rows, { schema }).toFile(outName)
+  await write(rows, { columns: excelColumns }).toFile(outName)
 }

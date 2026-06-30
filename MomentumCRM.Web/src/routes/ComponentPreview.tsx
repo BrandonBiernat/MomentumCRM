@@ -7,7 +7,9 @@ import {
   Checkbox,
   Modal,
   RadioGroup,
+  Message,
   Select,
+  Spinner,
   Switch,
   Table,
   TextField,
@@ -193,6 +195,48 @@ export const ComponentPreview = () => (
           <Button variant="primary" isDisabled>
             Disabled
           </Button>
+        </div>
+      </Section>
+
+      <Section title="Button — pending (isPending)">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button isPending>Save</Button>
+          <Button variant="secondary" isPending>
+            Export
+          </Button>
+          <Button size="lg" isPending>
+            Submitting
+          </Button>
+        </div>
+      </Section>
+
+      <Section title="Message">
+        <div className="flex max-w-md flex-col gap-3">
+          <Message variant="default">A neutral, default message.</Message>
+          <Message variant="info">Heads up — here's some useful information.</Message>
+          <Message variant="success">Your changes were saved successfully.</Message>
+          <Message variant="warning">This action can't be undone.</Message>
+          <Message variant="error">Invalid email or password.</Message>
+          <Message variant="info" showIcon={false}>
+            Without an icon.
+          </Message>
+        </div>
+      </Section>
+
+      <Section title="Spinner">
+        <div className="flex flex-wrap items-center gap-8">
+          <div className="flex items-end gap-5">
+            <Spinner size="sm" />
+            <Spinner size="md" />
+            <Spinner size="lg" />
+          </div>
+          <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+            <Spinner size="sm" />
+            Loading…
+          </span>
+          <div className="rounded-lg bg-brand-600 p-4">
+            <Spinner className="text-white" />
+          </div>
         </div>
       </Section>
 
