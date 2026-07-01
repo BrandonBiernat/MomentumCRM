@@ -50,10 +50,13 @@ export const Table = <T,>({
   toolbar,
   exportFileName = 'export',
   isVirtualized = false,
-  height = 360,
+  height,
   rowHeight = 44,
   ...props
 }: TableProps<T>) => {
+  // Virtualized without an explicit height → fill the parent container.
+  const fill = isVirtualized && height == null
+
   const [sort, setSort] = useState<SortDescriptor>()
   const [filters, setFilters] = useState<Record<string, string>>({})
   const [query, setQuery] = useState('')
@@ -102,12 +105,12 @@ export const Table = <T,>({
       selectionMode={selectionMode}
       sortDescriptor={sort}
       onSortChange={setSort}
-      className={`w-full border-collapse text-left text-sm ${isVirtualized ? 'overflow-auto' : 'table-fixed'}`}
-      style={isVirtualized ? { height } : undefined}
+      className={`w-full border-collapse text-left text-sm ${isVirtualized ? 'overflow-auto' : 'table-fixed'} ${fill ? 'min-h-0 flex-1' : ''}`}
+      style={isVirtualized && !fill ? { height } : undefined}
     >
-      <TableHeader className="bg-slate-50">
+      <TableHeader className="bg-slate-100">
         {selectionMode !== 'none' && (
-          <Column id="__selection" className="w-12 bg-slate-50 px-4 py-2.5 align-top">
+          <Column id="__selection" className="w-12 border-b border-slate-300 bg-slate-100 px-4 py-2.5 align-top">
             {selectionMode === 'multiple' ? (
               <Checkbox slot="selection" />
             ) : (
@@ -124,7 +127,7 @@ export const Table = <T,>({
             textValue={col.header}
             width={toRacWidth(col.width)}
             style={!isVirtualized && col.width != null ? { width: cssWidth(col.width) } : undefined}
-            className={`bg-slate-50 px-4 py-2.5 align-top text-xs font-semibold uppercase tracking-wider text-slate-500 outline-none data-[allows-sorting]:cursor-pointer data-[allows-sorting]:hover:text-slate-700 ${alignText[col.align]}`}
+            className={`border-b border-slate-300 bg-slate-100 px-4 py-2.5 align-top text-xs font-semibold uppercase tracking-wider text-slate-600 outline-none data-[allows-sorting]:cursor-pointer data-[allows-sorting]:hover:text-slate-900 ${alignText[col.align]}`}
           >
             {({ allowsSorting, sortDirection }) => (
               <ColumnHeader
@@ -143,7 +146,7 @@ export const Table = <T,>({
           <Row
             id={getRowId(item)}
             onAction={onRowAction ? () => onRowAction(item) : undefined}
-            className={`border-t border-slate-100 outline-none transition-colors hover:bg-slate-100 focus-visible:bg-slate-100 selected:bg-brand-50 selected:hover:bg-brand-100 ${onRowAction ? 'cursor-pointer' : ''}`}
+            className={`border-t border-slate-100 outline-none transition-colors focus-visible:bg-slate-100 selected:bg-brand-50 ${onRowAction ? 'cursor-pointer' : ''}`}
           >
             {selectionMode !== 'none' && (
               <Cell className="w-12 px-4 py-3">
@@ -165,7 +168,9 @@ export const Table = <T,>({
   )
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200">
+    <div
+      className={`overflow-hidden rounded-lg border border-slate-200 ${fill ? 'flex h-full flex-col' : ''}`}
+    >
       {(globalSearch || toolbarContent) && (
         <TableToolbar
           globalSearch={globalSearch}

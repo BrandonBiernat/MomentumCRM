@@ -55,7 +55,14 @@ public class MomentumCrmDbContext : DbContext {
         // Entities
         modelBuilder.Entity<Customer>().OwnsOne(c => c.Address);
         modelBuilder.Entity<Customer>().OwnsOne(c => c.Phone);
-        modelBuilder.Entity<Customer>().HasIndex(c => c.Email).IsUnique();
-        modelBuilder.Entity<Customer>().HasIndex(c => c.Domain).IsUnique();
+
+        modelBuilder.Entity<Customer>().HasQueryFilter(c => c.ArchivedAtUtc == null);
+
+        modelBuilder.Entity<Customer>()
+            .HasIndex(c => c.Email).IsUnique()
+            .HasFilter("\"ArchivedAtUtc\" IS NULL");
+        modelBuilder.Entity<Customer>()
+            .HasIndex(c => c.Domain).IsUnique()
+            .HasFilter("\"ArchivedAtUtc\" IS NULL");
     }
 }

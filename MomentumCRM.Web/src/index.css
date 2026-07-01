@@ -13,6 +13,15 @@ body {
   overflow: hidden;
 }
 
+/* Table row hover. React Aria disables its JS hover (data-hovered) on
+   non-interactive rows, so use the row's native :hover. Paint both the row and
+   its cells: the cells are the visible surface, and the row fills any gap an
+   empty cell would otherwise leave white. */
+[role='row'][data-rac]:hover,
+[role='row'][data-rac]:hover :is([role='gridcell'], [role='rowheader']) {
+  background-color: var(--color-slate-100);
+}
+
 /* Momentum design tokens. Ramp anchored on the logo's exact colors:
    brand-600 #7e14ff (mark), brand-500 #863bff, brand-100 #ede6ff,
    accent #47bfff (the arrow's blue wing). */

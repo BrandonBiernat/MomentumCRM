@@ -33,7 +33,8 @@ public record CustomerResponse(
     CustomerSource Source,
     CustomerStatus Status,
     DateTime CreatedAtUtc,
-    DateTime? UpdatedAtUtc
+    DateTime? UpdatedAtUtc,
+    DateTime? ArchivedAtUtc
 ) {
     public static CustomerResponse FromEntity(Customer c) =>
         new(
@@ -51,5 +52,6 @@ public record CustomerResponse(
             c.Source,
             c.Status,
             c.CreatedAtUtc,
-            c.UpdatedAtUtc);
+            c.UpdatedAtUtc,
+            c.ArchivedAtUtc);
 }

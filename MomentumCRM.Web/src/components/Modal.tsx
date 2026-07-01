@@ -46,7 +46,7 @@ export const Modal = ({ title, children, ...props }: ModalProps) => (
                 </svg>
               </Button>
             </div>
-            <div className="mt-3">
+            <div className="mt-3">1
               {typeof children === 'function' ? children({ close }) : children}
             </div>
           </>

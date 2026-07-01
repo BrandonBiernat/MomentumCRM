@@ -1,12 +1,16 @@
 using Microsoft.EntityFrameworkCore;
+using MomentumCRM.Persistence.Abstractions;
 using MomentumCRM.Persistence.Contexts;
 using MomentumCRM.Persistence.Entities;
+using MomentumCRM.Persistence.Enums.Customers;
 using MomentumCRM.Services.Common.Exceptions;
 using MomentumCRM.Services.Customers.Dtos;
 
 namespace MomentumCRM.Services.Customers;
 
-public class CustomersService(MomentumCrmDbContext db) : ICustomersService {
+public class CustomersService(
+    MomentumCrmDbContext db,
+    ICurrentUser currentUser) : ICustomersService {
     public async Task<CustomerResponse> CreateAsync(
         CreateCustomerRequest request,
         CancellationToken ct = default) {
@@ -64,11 +68,46 @@ public class CustomersService(MomentumCrmDbContext db) : ICustomersService {
         return CustomerResponse.FromEntity(customer);
     }
 
-    public async Task<IReadOnlyList<CustomerResponse>> GetAllAsync(CancellationToken ct = default) {
-        List<Customer> customers = await db.Customers
-            .AsNoTracking()
-            .OrderByDescending(c => c.CreatedAtUtc)
-            .ToListAsync(ct);
+    public async Task ArchiveAsync(
+        Guid id,
+        CancellationToken ct = default) {
+        Customer customer = await db.Customers
+            .FirstOrDefaultAsync(c => c.Id == new CustomerId(id), ct)
+                ?? throw new CustomerNotFoundException(id);
+
+        customer.Archive(currentUser.Id);
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task RestoreAsync(
+        Guid id,
+        CancellationToken ct = default) {
+        Customer customer = await db.Customers
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(c => c.Id == new CustomerId(id) && c.ArchivedAtUtc != null, ct)
+                ?? throw new CustomerNotFoundException(id);
+
+        customer.Restore();
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<CustomerResponse>> GetAllAsync(
+        CustomerStatus? status,
+        bool archived,
+        CancellationToken ct = default) {
+        IQueryable<Customer> query = archived
+            ? db.Customers.IgnoreQueryFilters().Where(c => c.ArchivedAtUtc != null)
+            : db.Customers;
+
+        if (status is not null)
+            query = query.Where(c => c.Status == status);
+
+        IOrderedQueryable<Customer> ordered = archived
+            ? query.OrderByDescending(c => c.ArchivedAtUtc)
+            : query.OrderByDescending(c => c.CreatedAtUtc);
+
+        List<Customer> customers = await
+            ordered.AsNoTracking().ToListAsync(ct);
         return [.. customers.Select(CustomerResponse.FromEntity)];
     }
 
@@ -95,5 +134,27 @@ public class CustomersService(MomentumCrmDbContext db) : ICustomersService {
             .OrderByDescending(c => c.CreatedAtUtc)
             .ToListAsync(ct);
         return [.. customers.Select(CustomerResponse.FromEntity)];
+    }
+
+    public async Task<CustomerSummaryResponse> GetSummaryAsync(
+        bool archived,
+        CancellationToken ct = default) {
+        IQueryable<Customer> query = archived
+            ? db.Customers.IgnoreQueryFilters().Where(c => c.ArchivedAtUtc != null)
+            : db.Customers;
+
+        var counts = await query
+            .GroupBy(c => c.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+
+        int CountOf(CustomerStatus s) => counts.FirstOrDefault(x => x.Status == s)?.Count ?? 0;
+
+        return new CustomerSummaryResponse(
+            All: counts.Sum(x => x.Count),
+            Lead: CountOf(CustomerStatus.Lead),
+            Prospect: CountOf(CustomerStatus.Prospect),
+            Active: CountOf(CustomerStatus.Active),
+            Inactive: CountOf(CustomerStatus.Inactive));
     }
 }

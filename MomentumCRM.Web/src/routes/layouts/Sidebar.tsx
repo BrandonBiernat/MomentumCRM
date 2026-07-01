@@ -7,7 +7,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { to: '/', label: 'Components', icon: 'fa-shapes' },
+  // { to: '/', label: 'Components', icon: 'fa-shapes' },
   { to: '/customers', label: 'Customers', icon: 'fa-users' },
   { to: '/settings', label: 'Settings', icon: 'fa-gear' },
 ]

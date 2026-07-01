@@ -26,8 +26,12 @@ public class Customer : IEntity<CustomerId>, IAuditable {
     public CustomerStatus Status { get; private set; }
     public Guid? CreatedBy { get; private set; }
     public Guid? UpdatedBy { get; private set; }
+    public Guid? ArchivedBy { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public DateTime? UpdatedAtUtc { get; private set; }
+    public DateTime? ArchivedAtUtc { get; private set; }
+
+    public bool IsArchived => ArchivedAtUtc is not null;
 
     private Customer() { Name = null!; }
     public Customer(
@@ -83,5 +87,17 @@ public class Customer : IEntity<CustomerId>, IAuditable {
 
     public void MarkInactive() {
         Status = CustomerStatus.Inactive;
+    }
+
+    public void Archive(Guid? archivedBy) {
+        if (ArchivedAtUtc is not null)
+            return;
+        ArchivedAtUtc = DateTime.UtcNow;
+        ArchivedBy = archivedBy;
+    }
+
+    public void Restore() {
+        ArchivedAtUtc = null;
+        ArchivedBy = null;
     }
 }

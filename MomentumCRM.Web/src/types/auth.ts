@@ -1,16 +1,16 @@
-export interface LoginRequest {
+export type LoginRequest = {
   email: string
   password: string
   rememberMe?: boolean
 }
 
-export interface RegisterRequest {
+export type RegisterRequest = {
   email: string
   password: string
   displayName: string
 }
 
-export interface AuthResponse {
+export type AuthResponse = {
   userId: string
   email: string
   displayName: string
@@ -19,7 +19,7 @@ export interface AuthResponse {
   expiresAtUtc: string
 }
 
-export interface AuthUser {
+export type AuthUser = {
   id: string
   email: string
   displayName: string
@@ -27,7 +27,7 @@ export interface AuthUser {
   avatarUrl?: string
 }
 
-export interface AuthCredentials {
+export type AuthCredentials = {
   accessToken: string
   user: AuthUser
 }
