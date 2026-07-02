@@ -23,8 +23,8 @@ interface SelectProps extends Omit<AriaSelectProps<SelectOption>, 'children'> {
 
 export const Select = ({ label, items, placeholder = 'Select…', ...props }: SelectProps) => (
   <AriaSelect {...props} placeholder={placeholder} className="flex flex-col gap-1.5">
-    {label && <Label className="text-sm font-medium text-slate-700">{label}</Label>}
-    <Button className="group flex items-center justify-between rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none hover:cursor-pointer hover:border-slate-400 focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500/30">
+    {label && <Label className="text-sm font-medium text-slate-700 dark:text-slate-200">{label}</Label>}
+    <Button className="group flex items-center justify-between rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none hover:cursor-pointer hover:border-slate-400 focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-600">
       <SelectValue className="data-[placeholder]:text-slate-400" />
       <svg
         viewBox="0 0 20 20"
@@ -41,13 +41,13 @@ export const Select = ({ label, items, placeholder = 'Select…', ...props }: Se
         />
       </svg>
     </Button>
-    <Popover className="w-(--trigger-width) rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
-      <ListBox items={items} className="outline-none">
+    <Popover className="w-(--trigger-width) rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+      <ListBox items={items} className="max-h-72 overflow-auto outline-none">
         {(item: SelectOption) => (
           <ListBoxItem
             id={item.id}
             textValue={item.label}
-            className="flex select-none items-center rounded-md px-3 py-1.5 text-sm text-slate-700 outline-none hover:cursor-pointer focus:bg-slate-100 selected:bg-brand-50 selected:text-brand-700"
+            className="flex select-none items-center rounded-md px-3 py-1.5 text-sm text-slate-700 outline-none hover:cursor-pointer focus:bg-slate-100 selected:bg-brand-50 selected:text-brand-700 dark:text-slate-200 dark:focus:bg-slate-800 dark:selected:bg-brand-950 dark:selected:text-brand-300"
           >
             {item.label}
           </ListBoxItem>

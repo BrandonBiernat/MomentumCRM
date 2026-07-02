@@ -2,6 +2,10 @@
 
 @plugin "tailwindcss-react-aria-components";
 
+/* Class-based dark mode. The `.dark` class is toggled on <html> by
+   useApplyTheme, driven by the user's saved theme preference. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 html,
 body,
 #root {
@@ -20,6 +24,11 @@ body {
 [role='row'][data-rac]:hover,
 [role='row'][data-rac]:hover :is([role='gridcell'], [role='rowheader']) {
   background-color: var(--color-slate-100);
+}
+
+.dark [role='row'][data-rac]:hover,
+.dark [role='row'][data-rac]:hover :is([role='gridcell'], [role='rowheader']) {
+  background-color: var(--color-slate-800);
 }
 
 /* Momentum design tokens. Ramp anchored on the logo's exact colors:
@@ -77,5 +86,29 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .spinner {
     animation-duration: 1.8s;
+  }
+}
+
+/* Toast enter/exit. React Aria keeps an exiting toast mounted until its
+   animation ends, so the slide-out plays before the element is removed. */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(100% + 1rem));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(calc(100% + 1rem));
   }
 }

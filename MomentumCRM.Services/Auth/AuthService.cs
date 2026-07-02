@@ -3,14 +3,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MomentumCRM.Persistence.Contexts;
 using MomentumCRM.Persistence.Entities;
+using MomentumCRM.Persistence.Entities.User;
 using MomentumCRM.Services.Auth.Dtos;
 using MomentumCRM.Services.Common.Exceptions;
+using MomentumCRM.Services.Settings;
+using MomentumCRM.Services.Settings.Dtos;
 
 namespace MomentumCRM.Services.Auth;
 
 public class AuthService(
     UserManager<User> userManager,
     ITokenService tokenService,
+    ISettingsService settingsService,
     AuthDbContext db,
     IOptions<JwtOptions> jwtOptions) : IAuthService {
 
@@ -98,6 +102,9 @@ public class AuthService(
 
         await db.SaveChangesAsync(ct);
 
+        UserSettingsResponse settings = await
+            settingsService.GetOrCreateAsync(user.Id, ct);
+
         return new AuthResult(
             UserId: user.Id,
             Email: user.Email!,
@@ -106,7 +113,8 @@ public class AuthService(
             AccessToken: access.Value,
             AccessTokenExpiresAtUtc: access.ExpiresAtUtc,
             RefreshToken: rawRefresh,
-            RefreshTokenExpiresAtUtc: refreshExpiry);
+            RefreshTokenExpiresAtUtc: refreshExpiry,
+            Settings: settings);
     }
 
     private async Task RevokeAllActiveAsync(Guid userId, CancellationToken ct) {

@@ -1,4 +1,4 @@
-using MomentumCRM.Persistence.Entities;
+using MomentumCRM.Persistence.Entities.User;
 
 namespace MomentumCRM.Services.Auth;
 

@@ -38,7 +38,7 @@ export const Tabs = ({
       role="tablist"
       aria-orientation="horizontal"
       onKeyDown={onKeyDown}
-      className={`flex items-center gap-1 ${bordered ? 'border-b border-slate-200' : ''} ${className}`}
+      className={`flex items-center gap-1 ${bordered ? 'border-b border-slate-200 dark:border-slate-800' : ''} ${className}`}
     >
       {tabs.map((tab) => {
         const selected = tab.id === selectedKey
@@ -55,15 +55,17 @@ export const Tabs = ({
             onClick={() => onSelectionChange(tab.id)}
             className={`-mb-px flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition hover:cursor-pointer focus-visible:outline-none ${
               selected
-                ? 'border-brand-600 text-brand-700'
-                : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
+                ? 'border-brand-600 text-brand-700 dark:text-brand-300'
+                : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:text-slate-200'
             }`}
           >
             {tab.label}
             {tab.count != null && (
               <span
                 className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${
-                  selected ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-500'
+                  selected
+                    ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300'
+                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
                 }`}
               >
                 {tab.count}

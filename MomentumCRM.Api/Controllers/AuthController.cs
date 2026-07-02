@@ -56,7 +56,8 @@ namespace Api.Controllers {
                 DisplayName: result.DisplayName,
                 Role: result.Role,
                 Token: result.AccessToken,
-                ExpiresAtUtc: result.AccessTokenExpiresAtUtc));
+                ExpiresAtUtc: result.AccessTokenExpiresAtUtc,
+                Settings: result.Settings));
         }
 
         private CookieOptions CookieOptions(DateTime expiresUtc) => new() {

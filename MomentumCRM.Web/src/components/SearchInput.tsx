@@ -52,10 +52,10 @@ export const SearchInput = ({
         }}
         placeholder={placeholder}
         aria-label="Search"
-        className={`w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-9 text-sm text-slate-800 outline-none placeholder:text-slate-400 hover:bg-white focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/30 ${hasText ? 'pr-3' : 'pr-14'}`}
+        className={`w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-9 text-sm text-slate-800 outline-none placeholder:text-slate-400 hover:bg-white focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:hover:bg-slate-800 dark:focus:bg-slate-800 ${hasText ? 'pr-3' : 'pr-14'}`}
       />
       {!hasText && (
-        <kbd className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 select-none rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-400 sm:block">
+        <kbd className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 select-none rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-400 sm:block dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500">
           {isMac ? '⌘' : 'Ctrl+'}
           {hotkey.toUpperCase()}
         </kbd>

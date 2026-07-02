@@ -15,7 +15,7 @@ export const TableToolbar = ({
   resultCount,
   children,
 }: TableToolbarProps) => (
-  <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-3 py-2">
+  <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
     <div className="flex items-center gap-2">
       {globalSearch && (
         <div className="relative w-64 max-w-full">
@@ -35,7 +35,7 @@ export const TableToolbar = ({
             onChange={(e) => onQueryChange(e.target.value)}
             placeholder="Search…"
             aria-label="Search all columns"
-            className="w-full rounded-md border border-slate-300 bg-white py-1.5 pl-8 pr-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
+            className="w-full rounded-md border border-slate-300 bg-white py-1.5 pl-8 pr-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
         </div>
       )}

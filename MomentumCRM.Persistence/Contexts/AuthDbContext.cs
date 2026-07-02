@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MomentumCRM.Persistence.Abstractions;
 using MomentumCRM.Persistence.Entities;
+using MomentumCRM.Persistence.Entities.User;
 using MomentumCRM.Persistence.Enums.Users;
 
 namespace MomentumCRM.Persistence.Contexts;
@@ -12,6 +15,11 @@ public class AuthDbContext(
     DbContextOptions<AuthDbContext> options,
     ICurrentUser currentUser) : IdentityDbContext<User, IdentityRole<Guid>, Guid>(options) {
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<UserSettings> UserSettings => Set<UserSettings>();
+
+    private static readonly JsonSerializerOptions SettingsJsonOptions = new() {
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     public override int SaveChanges() {
         StampAudit();
@@ -52,6 +60,27 @@ public class AuthDbContext(
             token.HasOne<User>()
                 .WithMany()
                 .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<UserSettings>(settings => {
+            settings.HasKey(s => s.UserId);
+
+            settings.Property(s => s.Settings)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    data => JsonSerializer.Serialize(data, SettingsJsonOptions),
+                    json => JsonSerializer.Deserialize<UserSettingsData>(json, SettingsJsonOptions)!,
+                    new ValueComparer<UserSettingsData>(
+                        (a, b) => JsonSerializer.Serialize(a, SettingsJsonOptions)
+                            == JsonSerializer.Serialize(b, SettingsJsonOptions),
+                        v => JsonSerializer.Serialize(v, SettingsJsonOptions).GetHashCode(),
+                        v => JsonSerializer.Deserialize<UserSettingsData>(
+                            JsonSerializer.Serialize(v, SettingsJsonOptions), SettingsJsonOptions)!));
+
+            settings.HasOne<User>()
+                .WithOne()
+                .HasForeignKey<UserSettings>(s => s.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

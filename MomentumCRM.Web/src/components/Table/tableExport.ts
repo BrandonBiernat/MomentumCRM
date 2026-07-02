@@ -40,7 +40,7 @@ const excelFormat = (col: TableColumn<unknown>): string | undefined => {
 
 const excelValue = <T,>(col: TableColumn<T>, row: T): string | number | boolean | Date | null => {
   const acc = col.accessor
-  const raw = acc ? acc(row) : col.filterValue ? col.filterValue(row) : null
+  const raw = acc ? acc(row) : null
   if (raw == null || raw === '') return null
 
   switch (col.dataType) {

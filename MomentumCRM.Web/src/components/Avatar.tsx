@@ -32,7 +32,10 @@ export const Avatar = ({ name, src, size = 'md', className = '' }: AvatarProps) 
 
   const text = initials(name)
   return (
-    <span className={`${base} bg-brand-100 font-semibold text-brand-700`} aria-hidden>
+    <span
+      className={`${base} bg-brand-100 font-semibold text-brand-700 dark:bg-brand-900 dark:text-brand-200`}
+      aria-hidden
+    >
       {text || <i className="fa-solid fa-user" />}
     </span>
   )

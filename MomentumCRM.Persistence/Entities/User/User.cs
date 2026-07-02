@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using MomentumCRM.Persistence.Abstractions;
 using MomentumCRM.Persistence.Enums.Users;
 
-namespace MomentumCRM.Persistence.Entities;
+namespace MomentumCRM.Persistence.Entities.User;
 
 public class User : IdentityUser<Guid>, IAuditable {
     public string DisplayName { get; private set; }

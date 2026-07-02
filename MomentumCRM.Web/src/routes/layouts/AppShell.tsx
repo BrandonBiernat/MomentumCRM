@@ -27,18 +27,18 @@ export const AppShell = () => {
 
   return (
     <div
-      className={`grid h-screen grid-rows-[auto_minmax(0,1fr)] overflow-hidden bg-slate-50 transition-[grid-template-columns] duration-200 ${
+      className={`grid h-screen grid-rows-[auto_minmax(0,1fr)] overflow-hidden bg-slate-50 transition-[grid-template-columns] duration-200 dark:bg-slate-950 ${
         sidebarOpen ? 'grid-cols-[15rem_minmax(0,1fr)]' : 'grid-cols-[4rem_minmax(0,1fr)]'
       }`}
     >
-      <header className="col-span-2 flex h-14 items-center gap-4 border-b border-slate-200 bg-white px-4">
+      <header className="col-span-2 flex h-14 items-center gap-4 border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setSidebarOpen((open) => !open)}
             aria-label="Toggle sidebar"
             aria-expanded={sidebarOpen}
-            className="flex size-9 items-center justify-center rounded-lg text-slate-600 transition hover:cursor-pointer hover:bg-slate-100"
+            className="flex size-9 items-center justify-center rounded-lg text-slate-600 transition hover:cursor-pointer hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             <i
               className={`fa-solid fa-angles-left text-base transition-transform duration-300 ${sidebarOpen ? '' : 'rotate-180'}`}
@@ -53,14 +53,18 @@ export const AppShell = () => {
         </div>
 
         <MenuTrigger>
-          <AriaButton className="flex items-center gap-3 rounded-full py-1 pl-3 pr-1 outline-none transition hover:cursor-pointer hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand-600">
-            {user && <span className="text-sm font-medium text-slate-700">{user.displayName}</span>}
+          <AriaButton className="flex items-center gap-3 rounded-full py-1 pl-3 pr-1 outline-none transition hover:cursor-pointer hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand-600 dark:hover:bg-slate-800">
+            {user && (
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                {user.displayName}
+              </span>
+            )}
             <Avatar name={user?.displayName} src={user?.avatarUrl} size="sm" />
           </AriaButton>
-          <Popover className="min-w-56 origin-top-right rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
-            <div className="border-b border-slate-100 px-3 py-2">
-              <p className="text-sm font-medium text-slate-900">{user?.displayName}</p>
-              <p className="truncate text-xs text-slate-500">{user?.email}</p>
+          <Popover className="min-w-56 origin-top-right rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+            <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-800">
+              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{user?.displayName}</p>
+              <p className="truncate text-xs text-slate-500 dark:text-slate-400">{user?.email}</p>
             </div>
             <Menu
               className="py-1 outline-none"
@@ -70,7 +74,7 @@ export const AppShell = () => {
             >
               <MenuItem
                 id="logout"
-                className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5 text-sm text-slate-700 outline-none focus:bg-slate-100"
+                className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5 text-sm text-slate-700 outline-none focus:bg-slate-100 dark:text-slate-200 dark:focus:bg-slate-800"
               >
                 <i className="fa-solid fa-arrow-right-from-bracket w-4 text-center" aria-hidden />
                 Log out

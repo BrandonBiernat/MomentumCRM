@@ -12,9 +12,9 @@ const variants: Record<Variant, string> = {
   primary:
     'bg-brand-600 text-white hover:bg-brand-500 pressed:bg-brand-700 focus-visible:ring-brand-600',
   secondary:
-    'bg-white text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 pressed:bg-slate-100 focus-visible:ring-brand-600',
+    'bg-white text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 pressed:bg-slate-100 focus-visible:ring-brand-600 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600 dark:hover:bg-slate-700 dark:pressed:bg-slate-600',
   ghost:
-    'text-slate-700 hover:bg-slate-100 pressed:bg-slate-200 focus-visible:ring-slate-400',
+    'text-slate-700 hover:bg-slate-100 pressed:bg-slate-200 focus-visible:ring-slate-400 dark:text-slate-200 dark:hover:bg-slate-800 dark:pressed:bg-slate-700',
   destructive:
     'bg-red-600 text-white hover:bg-red-500 pressed:bg-red-700 focus-visible:ring-red-600',
 }

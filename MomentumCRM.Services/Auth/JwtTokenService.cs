@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using MomentumCRM.Persistence.Entities;
+using MomentumCRM.Persistence.Entities.User;
 
 namespace MomentumCRM.Services.Auth;
 

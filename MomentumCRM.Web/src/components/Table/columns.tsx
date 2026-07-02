@@ -64,7 +64,7 @@ const makeSortValue = <T,>(col: TableColumn<T>): ((item: T) => string | number) 
   return (item) => String(acc(item) ?? '').toLowerCase()
 }
 
-const linkClass = 'text-brand-600 hover:underline'
+const linkClass = 'text-brand-600 hover:underline dark:text-brand-400'
 const stopClick = (e: { stopPropagation: () => void }) => e.stopPropagation()
 
 const makeRender = <T,>(
@@ -111,7 +111,7 @@ const makeRender = <T,>(
 export const resolveColumn = <T,>(col: TableColumn<T>): ResolvedColumn<T> => {
   const format = makeFormatter(col)
   const acc = col.accessor
-  const searchText = col.filterValue ?? (acc ? (item: T) => format(acc(item)) : undefined)
+  const searchText = acc ? (item: T) => format(acc(item)) : undefined
   return {
     id: col.id,
     header: col.header,
@@ -121,7 +121,6 @@ export const resolveColumn = <T,>(col: TableColumn<T>): ResolvedColumn<T> => {
     align: col.align ?? (isNumeric(col.dataType) ? 'right' : 'left'),
     render: makeRender(col, format),
     sortValue: col.sortValue ?? makeSortValue(col),
-    filterValue: col.filterValue ?? (col.filterable && acc ? (item) => format(acc(item)) : undefined),
     searchText,
   }
 }

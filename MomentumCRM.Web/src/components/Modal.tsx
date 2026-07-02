@@ -19,13 +19,13 @@ export const Modal = ({ title, children, ...props }: ModalProps) => (
     {...props}
     className="fixed inset-0 z-50 flex min-h-full items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm transition-opacity duration-200 data-[entering]:opacity-0 data-[exiting]:opacity-0"
   >
-    <AriaModal className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl transition duration-200 data-[entering]:scale-95 data-[entering]:opacity-0 data-[exiting]:scale-95 data-[exiting]:opacity-0">
+    <AriaModal className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl transition duration-200 data-[entering]:scale-95 data-[entering]:opacity-0 data-[exiting]:scale-95 data-[exiting]:opacity-0 dark:bg-slate-900">
       <Dialog className="outline-none">
         {({ close }) => (
           <>
             <div className="flex items-start justify-between">
               {title && (
-                <Heading slot="title" className="text-lg font-semibold text-slate-900">
+                <Heading slot="title" className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                   {title}
                 </Heading>
               )}
@@ -46,7 +46,7 @@ export const Modal = ({ title, children, ...props }: ModalProps) => (
                 </svg>
               </Button>
             </div>
-            <div className="mt-3">1
+            <div className="mt-3 text-slate-700 dark:text-slate-300">
               {typeof children === 'function' ? children({ close }) : children}
             </div>
           </>

@@ -30,8 +30,6 @@ export interface TableColumn<T> {
   linkLabel?: (item: T) => string
   allowsSorting?: boolean
   sortValue?: (item: T) => string | number
-  filterable?: boolean
-  filterValue?: (item: T) => string
   render?: (item: T) => ReactNode
 }
 
@@ -44,7 +42,6 @@ export interface ResolvedColumn<T> {
   align: 'left' | 'right' | 'center'
   render: (item: T) => ReactNode
   sortValue?: (item: T) => string | number
-  filterValue?: (item: T) => string
   searchText?: (item: T) => string
 }
 

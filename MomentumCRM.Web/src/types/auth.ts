@@ -1,3 +1,5 @@
+import type { UserSettings } from './settings'
+
 export type LoginRequest = {
   email: string
   password: string
@@ -17,6 +19,7 @@ export type AuthResponse = {
   role: string
   token: string
   expiresAtUtc: string
+  settings: UserSettings
 }
 
 export type AuthUser = {
@@ -30,6 +33,7 @@ export type AuthUser = {
 export type AuthCredentials = {
   accessToken: string
   user: AuthUser
+  settings: UserSettings
 }
 
 export const credentialsFromResponse = (res: AuthResponse): AuthCredentials => ({
@@ -40,4 +44,5 @@ export const credentialsFromResponse = (res: AuthResponse): AuthCredentials => (
     displayName: res.displayName,
     role: res.role,
   },
+  settings: res.settings,
 })

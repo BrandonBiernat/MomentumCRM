@@ -7,9 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MomentumCRM.Persistence.Abstractions;
 using MomentumCRM.Persistence.Contexts;
-using MomentumCRM.Persistence.Entities;
+using MomentumCRM.Persistence.Entities.User;
 using MomentumCRM.Services.Auth;
 using MomentumCRM.Services.Customers;
+using MomentumCRM.Services.Settings;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -96,6 +97,7 @@ try {
     builder.Services.AddScoped<ITokenService, JwtTokenService>();
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<ICustomersService, CustomersService>();
+    builder.Services.AddScoped<ISettingsService, SettingsService>();
 
     WebApplication app = builder.Build();
 

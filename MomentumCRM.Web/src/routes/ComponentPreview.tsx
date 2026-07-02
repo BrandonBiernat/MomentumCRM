@@ -38,25 +38,25 @@ const customerColumns: TableColumn<CustomerRow>[] = [
     header: 'Name',
     isRowHeader: true,
     allowsSorting: true,
+    accessor: (c) => c.name,
     sortValue: (c) => c.name.toLowerCase(),
-    filterValue: (c) => c.name,
     render: (c) => <span className="font-medium text-slate-900">{c.name}</span>,
   },
   {
     id: 'email',
     header: 'Email',
     allowsSorting: true,
+    accessor: (c) => c.email,
     sortValue: (c) => c.email.toLowerCase(),
-    filterValue: (c) => c.email,
     render: (c) => c.email,
   },
-  { id: 'type', header: 'Type', filterValue: (c) => c.type, render: (c) => c.type },
+  { id: 'type', header: 'Type', accessor: (c) => c.type, render: (c) => c.type },
   {
     id: 'status',
     header: 'Status',
     allowsSorting: true,
+    accessor: (c) => c.status,
     sortValue: (c) => c.status,
-    filterValue: (c) => c.status,
     render: (c) => <Badge color={statusColor[c.status]}>{c.status}</Badge>,
   },
 ]
@@ -90,8 +90,8 @@ const deals: Deal[] = [
 ]
 
 const dealColumns: TableColumn<Deal>[] = [
-  { id: 'company', header: 'Company', isRowHeader: true, width: '12rem', accessor: (d) => d.company, dataType: 'text', allowsSorting: true, filterable: true },
-  { id: 'email', header: 'Contact', width: '180px', accessor: (d) => d.email, dataType: 'email', filterable: true },
+  { id: 'company', header: 'Company', isRowHeader: true, width: '12rem', accessor: (d) => d.company, dataType: 'text', allowsSorting: true },
+  { id: 'email', header: 'Contact', width: '180px', accessor: (d) => d.email, dataType: 'email' },
   { id: 'website', header: 'Website', accessor: (d) => d.website, dataType: 'link', linkLabel: (d) => d.website.replace(/^https?:\/\//, '') },
   { id: 'amount', header: 'Amount', width: 110, accessor: (d) => d.amount, dataType: 'currency', currency: 'USD', allowsSorting: true },
   { id: 'probability', header: 'Win %', width: '90px', accessor: (d) => d.probability, dataType: 'percent', allowsSorting: true },

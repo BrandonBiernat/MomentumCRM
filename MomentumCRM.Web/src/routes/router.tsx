@@ -32,7 +32,7 @@ export const router = createBrowserRouter([
               // Customers
               {
                 path: '/customers',
-                lazy: async () => ({ Component: (await import('./CustomersPage')).CustomersPage }),
+                lazy: async () => ({ Component: (await import('./customer/CustomersIndex')).CustomersIndex }),
               },
               {
                 path: '/customers/:id',
@@ -52,7 +52,7 @@ export const router = createBrowserRouter([
               // Settings
               {
                 path: '/settings',
-                element: <PlaceholderPage title="Settings" />
+                lazy: async () => ({ Component: (await import('./SettingsPage')).SettingsPage }),
               },
             ],
           },

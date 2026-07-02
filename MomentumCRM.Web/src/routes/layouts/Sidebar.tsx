@@ -13,8 +13,8 @@ const navItems: NavItem[] = [
 ]
 
 export const Sidebar = ({ open }: { open: boolean }) => (
-  <aside className="overflow-hidden bg-white">
-    <nav className="flex h-full w-full flex-col gap-1 overflow-y-auto border-r border-slate-200 p-2">
+  <aside className="overflow-hidden bg-white dark:bg-slate-900">
+    <nav className="flex h-full w-full flex-col gap-1 overflow-y-auto border-r border-slate-200 p-2 dark:border-slate-800">
       {navItems.map((item) => (
         <NavLink
           key={item.to}
@@ -23,7 +23,9 @@ export const Sidebar = ({ open }: { open: boolean }) => (
           title={open ? undefined : item.label}
           className={({ isActive }) =>
             `flex items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium transition ${
-              isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-100'
+              isActive
+                ? 'bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300'
+                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
             }`
           }
         >
