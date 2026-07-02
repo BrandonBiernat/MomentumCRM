@@ -3,6 +3,7 @@ import type {
     Customer,
     CustomerStatus,
     CustomerSummary,
+    PatchCustomerRequest,
     UpdateCustomerRequest,
 } from "../../types/customer";
 import { baseApi } from "../baseApi";
@@ -65,6 +66,26 @@ export const customersApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: (_r, _e, { id }) => [{ type: 'Customer', id }, LIST, SUMMARY]
         }),
+        patchCustomer: builder.mutation<Customer, { id: string, body: PatchCustomerRequest }>({
+            query: ({ id, body }) => ({
+                url: `api/customers/${id}`,
+                method: 'PATCH',
+                body
+            }),
+            onQueryStarted: async ({ id, body }, { dispatch, queryFulfilled }) => {
+                const patch = dispatch(
+                    customersApi.util.updateQueryData('getCustomerById', id, (draft) => {
+                        Object.assign(draft, body)
+                    }),
+                )
+                try {
+                    await queryFulfilled
+                } catch {
+                    patch.undo()
+                }
+            },
+            invalidatesTags: (_r, _e, { id }) => [{ type: 'Customer', id }, LIST, SUMMARY]
+        }),
     }),
     overrideExisting: false,
 })
@@ -78,5 +99,6 @@ export const {
     useArchiveCustomerMutation,
     useRestoreCustomerMutation,
 
-    useUpdateCustomerMutation
+    useUpdateCustomerMutation,
+    usePatchCustomerMutation
 } = customersApi;

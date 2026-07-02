@@ -11,6 +11,10 @@ public interface ICustomersService {
         Guid id,
         UpdateCustomerRequest request,
         CancellationToken ct = default);
+    Task<CustomerResponse> PatchAsync(
+        Guid id,
+        PatchCustomerRequest request,
+        CancellationToken ct = default);
     Task<IReadOnlyList<CustomerResponse>> GetAllAsync(
         CustomerStatus? status,
         bool archived,

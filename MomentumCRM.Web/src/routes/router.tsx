@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
               },
               {
                 path: '/customers/:id',
-                element: <PlaceholderPage title="Customer" />
+                lazy: async () => ({ Component: (await import('./customer/CustomerPage')).CustomerPage }),
               },
 
               // Contacts

@@ -68,6 +68,48 @@ public class CustomersService(
         return CustomerResponse.FromEntity(customer);
     }
 
+    public async Task<CustomerResponse> PatchAsync(
+        Guid id,
+        PatchCustomerRequest request,
+        CancellationToken ct = default) {
+        Customer customer = await db.Customers
+            .FindAsync([new CustomerId(id)], ct)
+                ?? throw new CustomerNotFoundException(id);
+
+        if (!string.IsNullOrWhiteSpace(request.Name))
+            customer.Rename(request.Name);
+        if (request.Type is not null)
+            customer.ChangeType(request.Type.Value);
+        if (request.Source is not null)
+            customer.ChangeSource(request.Source.Value);
+        if (request.Status is not null)
+            customer.ChangeStatus(request.Status.Value);
+
+        if (request.Email.HasValue) {
+            string? email = request.Email.Value?.Trim().ToLower();
+            if (!string.IsNullOrWhiteSpace(email)) {
+                bool emailExists = await db.Customers
+                    .AnyAsync(c => c.Email == email && c.Id != customer.Id, ct);
+                if (emailExists)
+                    throw new CustomerAlreadyExistsException(email);
+            }
+            customer.ChangeEmail(email);
+        }
+
+        if (request.Domain.HasValue)
+            customer.ChangeDomain(request.Domain.Value);
+        if (request.Phone.HasValue)
+            customer.ChangePhone(request.Phone.Value?.ToValueObject());
+        if (request.Address.HasValue)
+            customer.ChangeAddress(request.Address.Value?.ToValueObject());
+
+        if (string.IsNullOrWhiteSpace(customer.Email) && customer.Phone is null)
+            throw new CustomerHasNoContactInfoException();
+
+        await db.SaveChangesAsync(ct);
+        return CustomerResponse.FromEntity(customer);
+    }
+
     public async Task ArchiveAsync(
         Guid id,
         CancellationToken ct = default) {

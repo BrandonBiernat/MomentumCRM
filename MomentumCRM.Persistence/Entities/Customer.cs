@@ -81,6 +81,29 @@ public class Customer : IEntity<CustomerId>, IAuditable {
         Type = type;
     }
 
+    public void ChangeSource(CustomerSource source) {
+        Source = source;
+    }
+
+    public void ChangeStatus(CustomerStatus status) {
+        Status = status;
+    }
+
+    // The status lifecycle state machine. Any-to-any is not allowed; these are
+    // the transitions the pipeline permits.
+    private static readonly IReadOnlyDictionary<CustomerStatus, CustomerStatus[]> AllowedStatusTransitions =
+        new Dictionary<CustomerStatus, CustomerStatus[]> {
+            [CustomerStatus.Lead] = [CustomerStatus.Prospect, CustomerStatus.Inactive],
+            [CustomerStatus.Prospect] = [CustomerStatus.Lead, CustomerStatus.Active, CustomerStatus.Inactive],
+            [CustomerStatus.Active] = [CustomerStatus.Inactive],
+            [CustomerStatus.Inactive] = [CustomerStatus.Lead, CustomerStatus.Prospect, CustomerStatus.Active],
+        };
+
+    public bool CanTransitionTo(CustomerStatus to) =>
+        to != Status &&
+        AllowedStatusTransitions.TryGetValue(Status, out CustomerStatus[]? next) &&
+        next.Contains(to);
+
     public void Activate() {
         Status = CustomerStatus.Active;
     }

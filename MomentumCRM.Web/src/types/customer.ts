@@ -35,6 +35,19 @@ export type CreateCustomerRequest = {
     phone?: Phone
 }
 
+// Partial update. Omit a key to leave it unchanged; send null to clear
+// (email/phone/domain/address only — name/type/source/status can't be cleared).
+export type PatchCustomerRequest = {
+    name?: string
+    type?: CustomerType
+    source?: CustomerSource
+    status?: CustomerStatus
+    email?: string | null
+    domain?: string | null
+    phone?: Phone | null
+    address?: Address | null
+}
+
 export type CustomerSummary = {
     all: number
     lead: number

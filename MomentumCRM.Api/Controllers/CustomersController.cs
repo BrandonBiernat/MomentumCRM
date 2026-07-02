@@ -54,5 +54,11 @@ namespace Api.Controllers {
             Guid id,
             UpdateCustomerRequest request,
             CancellationToken ct) => Ok(await customers.UpdateAsync(id, request, ct));
+
+        [HttpPatch("{id:guid}")]
+        public async Task<ActionResult<CustomerResponse>> Patch(
+            Guid id,
+            PatchCustomerRequest request,
+            CancellationToken ct) => Ok(await customers.PatchAsync(id, request, ct));
     }
 }
