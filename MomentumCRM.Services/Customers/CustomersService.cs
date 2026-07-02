@@ -51,6 +51,9 @@ public class CustomersService(
             .FindAsync([new CustomerId(id)], ct)
                 ?? throw new CustomerNotFoundException(id);
 
+        if (customer.IsArchived)
+            throw new CustomerArchivedException(id);
+
         if (string.IsNullOrWhiteSpace(request.Email) && request.Phone is null)
             throw new CustomerHasNoContactInfoException();
 
@@ -81,6 +84,9 @@ public class CustomersService(
         Customer customer = await db.Customers
             .FindAsync([new CustomerId(id)], ct)
                 ?? throw new CustomerNotFoundException(id);
+
+        if (customer.IsArchived)
+            throw new CustomerArchivedException(id);
 
         if (!string.IsNullOrWhiteSpace(request.Name))
             customer.Rename(request.Name);
@@ -121,6 +127,9 @@ public class CustomersService(
         Customer customer = await db.Customers
             .FindAsync([new CustomerId(id)], ct)
                 ?? throw new CustomerNotFoundException(id);
+
+        if (customer.IsArchived)
+            throw new CustomerArchivedException(id);
 
         if (customer.Status == request.Status)
             return CustomerResponse.FromEntity(customer);
@@ -172,7 +181,36 @@ public class CustomersService(
             .FirstOrDefaultAsync(c => c.Id == new CustomerId(id) && c.ArchivedAtUtc != null, ct)
                 ?? throw new CustomerNotFoundException(id);
 
+        // The unique Email/Domain indexes are filtered to active rows, so an
+        // active customer may have taken this one's email/domain while it was
+        // archived. Restoring would violate the index, so guard with a clear error.
+        if (!string.IsNullOrWhiteSpace(customer.Email)) {
+            bool emailInUse = await db.Customers
+                .AnyAsync(c => c.Email == customer.Email, ct);
+            if (emailInUse)
+                throw new CustomerRestoreConflictException(customer.Email);
+        }
+
+        if (!string.IsNullOrWhiteSpace(customer.Domain)) {
+            bool domainInUse = await db.Customers
+                .AnyAsync(c => c.Domain == customer.Domain, ct);
+            if (domainInUse)
+                throw new CustomerRestoreConflictException(customer.Domain);
+        }
+
         customer.Restore();
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task DeleteAsync(
+        Guid id,
+        CancellationToken ct = default) {
+        Customer customer = await db.Customers
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(c => c.Id == new CustomerId(id) && c.ArchivedAtUtc != null, ct)
+                ?? throw new CustomerNotFoundException(id);
+
+        db.Customers.Remove(customer);
         await db.SaveChangesAsync(ct);
     }
 
@@ -199,10 +237,12 @@ public class CustomersService(
     public async Task<CustomerResponse> GetByIdAsync(
         Guid id,
         CancellationToken ct = default) {
-        IReadOnlyList<CustomerResponse> customers = await GetByIdsAsync([id], ct);
-        if (customers.Count == 0)
-            throw new CustomerNotFoundException(id);
-        return customers[0];
+        Customer customer = await db.Customers
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == new CustomerId(id), ct)
+                ?? throw new CustomerNotFoundException(id);
+        return CustomerResponse.FromEntity(customer);
     }
 
     public async Task<IReadOnlyList<CustomerResponse>> GetByIdsAsync(

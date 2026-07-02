@@ -19,6 +19,14 @@ const EditPen = ({ label, onPress }: { label: string; onPress?: () => void }) =>
 const addClass = 'text-left text-slate-400 hover:cursor-pointer dark:text-slate-500'
 const valueClass = 'truncate select-text text-slate-800 dark:text-slate-200'
 
+// Plain, non-editable rendering of a field value (used for archived customers).
+const ReadOnlyValue = ({ value }: { value: string | null | undefined }) =>
+  value ? (
+    <span className={valueClass}>{value}</span>
+  ) : (
+    <span className="text-slate-400 dark:text-slate-500">—</span>
+  )
+
 // ---- Inline text (name, email, domain) ----
 
 interface InlineTextProps {
@@ -28,6 +36,7 @@ interface InlineTextProps {
   type?: 'text' | 'email' | 'tel'
   placeholder?: string
   emptyLabel?: string
+  readOnly?: boolean
 }
 
 export const InlineText = ({
@@ -37,6 +46,7 @@ export const InlineText = ({
   type = 'text',
   placeholder,
   emptyLabel = 'Add',
+  readOnly = false,
 }: InlineTextProps) => {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
@@ -76,6 +86,10 @@ export const InlineText = ({
     } finally {
       setSaving(false)
     }
+  }
+
+  if (readOnly) {
+    return <ReadOnlyValue value={value} />
   }
 
   if (editing) {
@@ -130,10 +144,23 @@ interface InlineSelectFieldProps {
   items: SelectOption[]
   onSave: (value: string) => Promise<void>
   ariaLabel: string
+  readOnly?: boolean
 }
 
-export const InlineSelectField = ({ value, items, onSave, ariaLabel }: InlineSelectFieldProps) => {
+export const InlineSelectField = ({
+  value,
+  items,
+  onSave,
+  ariaLabel,
+  readOnly = false,
+}: InlineSelectFieldProps) => {
   const [saving, setSaving] = useState(false)
+
+  if (readOnly) {
+    const label = items.find((item) => item.id === value)?.label ?? value
+    return <ReadOnlyValue value={label} />
+  }
+
   return (
     <span className="inline-flex items-center gap-2">
       <Select
@@ -207,12 +234,16 @@ const PopoverField = ({
 interface PhoneEditorProps {
   phone: Phone | null
   onSave: (phone: Phone | null) => Promise<void>
+  readOnly?: boolean
 }
 
-export const PhoneEditor = ({ phone, onSave }: PhoneEditorProps) => {
+export const PhoneEditor = ({ phone, onSave, readOnly = false }: PhoneEditorProps) => {
   const display = phone?.number
     ? `${phone.number}${phone.extension ? ` ext. ${phone.extension}` : ''}`
     : null
+  if (readOnly) {
+    return <ReadOnlyValue value={display} />
+  }
   return (
     <PopoverField display={display} addLabel="Add phone" editLabel="Edit phone">
       <Dialog className="outline-none">
@@ -277,14 +308,18 @@ const PhoneForm = ({ phone, onSave, onClose }: PhoneEditorProps & { onClose: () 
 interface AddressEditorProps {
   address: Address | null
   onSave: (address: Address | null) => Promise<void>
+  readOnly?: boolean
 }
 
-export const AddressEditor = ({ address, onSave }: AddressEditorProps) => {
+export const AddressEditor = ({ address, onSave, readOnly = false }: AddressEditorProps) => {
   const display = address
     ? [address.street, address.city, `${address.state} ${address.postalCode}`.trim(), address.country]
         .filter((p) => p && p.trim())
         .join(', ')
     : null
+  if (readOnly) {
+    return <ReadOnlyValue value={display} />
+  }
   return (
     <PopoverField display={display} addLabel="Add address" editLabel="Edit address">
       <Dialog className="outline-none">

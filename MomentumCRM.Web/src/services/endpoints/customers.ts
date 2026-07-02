@@ -72,6 +72,13 @@ export const customersApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: (_r, _e, id) => [{ type: 'Customer', id }, LIST, SUMMARY]
         }),
+        deleteCustomer: builder.mutation<void, string>({
+            query: (id) => ({
+                url: `api/customers/${id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: (_r, _e, id) => [{ type: 'Customer', id }, LIST, SUMMARY]
+        }),
         updateCustomer: builder.mutation<Customer, { id: string, body: UpdateCustomerRequest }>({
             query: ({ id, body }) => ({
                 url: `api/customers/${id}`,
@@ -157,6 +164,7 @@ export const {
     useCreateCustomerMutation,
     useArchiveCustomerMutation,
     useRestoreCustomerMutation,
+    useDeleteCustomerMutation,
 
     useUpdateCustomerMutation,
     usePatchCustomerMutation,

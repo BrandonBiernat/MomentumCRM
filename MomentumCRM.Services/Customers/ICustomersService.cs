@@ -35,4 +35,5 @@ public interface ICustomersService {
         CancellationToken ct = default);
     Task ArchiveAsync(Guid id, CancellationToken ct = default);
     Task RestoreAsync(Guid id, CancellationToken ct = default);
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
 }

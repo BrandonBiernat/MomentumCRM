@@ -49,6 +49,12 @@ namespace Api.Controllers {
             return NoContent();
         }
 
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id, CancellationToken ct) {
+            await customers.DeleteAsync(id, ct);
+            return NoContent();
+        }
+
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<CustomerResponse>> Update(
             Guid id,

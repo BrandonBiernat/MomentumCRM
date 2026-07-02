@@ -17,11 +17,21 @@ const statusColor: Record<CustomerStatus, 'amber' | 'violet' | 'green' | 'gray'>
   Inactive: 'gray',
 }
 
-export const StatusChanger = ({ customer }: { customer: Customer }) => {
+export const StatusChanger = ({
+  customer,
+  readOnly = false,
+}: {
+  customer: Customer
+  readOnly?: boolean
+}) => {
   const [changeStatus, { isLoading }] = useChangeCustomerStatusMutation()
   const [pending, setPending] = useState<CustomerStatus | null>(null)
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string>()
+
+  if (readOnly) {
+    return <Badge color={statusColor[customer.status]}>{customer.status}</Badge>
+  }
 
   const options = allowedStatusTransitions[customer.status]
   const reasonRequired = pending != null && statusReasonRequired(pending)

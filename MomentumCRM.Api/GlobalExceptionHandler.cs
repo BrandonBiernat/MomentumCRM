@@ -20,6 +20,8 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             // Customers
             CustomerAlreadyExistsException => (StatusCodes.Status409Conflict, exception.Message),
             CustomerNotFoundException => (StatusCodes.Status404NotFound, "Customer not found"),
+            CustomerArchivedException => (StatusCodes.Status409Conflict, exception.Message),
+            CustomerRestoreConflictException => (StatusCodes.Status409Conflict, exception.Message),
             CustomerHasNoContactInfoException => (StatusCodes.Status400BadRequest, exception.Message),
             InvalidStatusTransitionException => (StatusCodes.Status409Conflict, exception.Message),
             StatusChangeReasonRequiredException => (StatusCodes.Status400BadRequest, exception.Message),

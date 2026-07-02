@@ -9,10 +9,15 @@ const options: CustomerType[] = ['Business', 'Individual']
 export const TypeChanger = ({
   value,
   onChange,
+  readOnly = false,
 }: {
   value: CustomerType
   onChange: (type: CustomerType) => void
-}) => (
+  readOnly?: boolean
+}) =>
+  readOnly ? (
+    <Badge color={value === 'Business' ? 'violet' : 'gray'}>{value}</Badge>
+  ) : (
   <MenuTrigger>
     <AriaButton
       aria-label="Change type"

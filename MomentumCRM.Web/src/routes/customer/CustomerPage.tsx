@@ -1,11 +1,13 @@
 import { useState, type ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
-import { Avatar, Button, ConfirmDialog, Spinner, Tooltip, toast } from '../../components'
+import { Avatar, Breadcrumbs, Button, ConfirmDialog, Spinner, Tooltip, toast } from '../../components'
 import {
   useArchiveCustomerMutation,
+  useDeleteCustomerMutation,
   useGetCustomerByIdQuery,
   usePatchCustomerMutation,
+  useRestoreCustomerMutation,
 } from '../../services'
 import type { Customer, CustomerSource, PatchCustomerRequest } from '../../types/customer'
 import { getFormErrorMessage, sourceOptions } from './components/customerFormShared'
@@ -22,16 +24,6 @@ import { NotesSection } from './components/NotesSection'
 
 const DATETIME_FORMAT = 'MMM D, YYYY h:mm A'
 
-const BackLink = () => (
-  <Link
-    to="/customers"
-    className="inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-  >
-    <i className="fa-solid fa-arrow-left" aria-hidden />
-    Customers
-  </Link>
-)
-
 export const CustomerPage = () => {
   const { id = '' } = useParams()
   const { data: customer, isLoading, isError } = useGetCustomerByIdQuery(id, { skip: !id })
@@ -47,7 +39,9 @@ export const CustomerPage = () => {
   if (isError || !customer) {
     return (
       <div className="mx-auto max-w-7xl p-6">
-        <BackLink />
+        <Breadcrumbs
+          items={[{ label: 'Customers', to: '/customers' }, { label: 'Not found' }]}
+        />
         <div className="mt-6 rounded-xl border border-slate-200 bg-white p-10 text-center dark:border-slate-800 dark:bg-slate-900">
           <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Customer not found</p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -64,9 +58,13 @@ export const CustomerPage = () => {
 const CustomerView = ({ customer }: { customer: Customer }) => {
   const navigate = useNavigate()
   const [archive, { isLoading: archiving }] = useArchiveCustomerMutation()
+  const [restore, { isLoading: restoring }] = useRestoreCustomerMutation()
+  const [deleteCustomer, { isLoading: deleting }] = useDeleteCustomerMutation()
   const [patchCustomer] = usePatchCustomerMutation()
   const [confirmingArchive, setConfirmingArchive] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const isBusiness = customer.type === 'Business'
+  const isArchived = customer.archivedAtUtc != null
 
   const patch = async (body: PatchCustomerRequest) => {
     try {
@@ -96,11 +94,42 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
     }
   }
 
+  const onRestore = async () => {
+    try {
+      await restore(customer.id).unwrap()
+      toast.success(`${customer.name} was restored.`)
+    } catch (err) {
+      toast.error(getFormErrorMessage(err))
+    }
+  }
+
+  const onDelete = async () => {
+    try {
+      await deleteCustomer(customer.id).unwrap()
+      toast.success(`${customer.name} was permanently deleted.`)
+      navigate('/customers')
+    } catch {
+      toast.error('Could not delete this customer.')
+      setConfirmingDelete(false)
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl p-6">
       <div className="mb-4">
-        <BackLink />
+        <Breadcrumbs
+          items={[{ label: 'Customers', to: '/customers' }, { label: customer.name }]}
+        />
       </div>
+
+      {isArchived && (
+        <div className="mb-4 flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
+          <i className="fa-solid fa-box-archive" aria-hidden />
+          <span>
+            This customer was archived {dayjs(customer.archivedAtUtc).format(DATETIME_FORMAT)}. Restore it to make changes.
+          </span>
+        </div>
+      )}
 
       <header className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
@@ -113,10 +142,14 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                <InlineText value={customer.name} onSave={saveName} ariaLabel="name" />
+                <InlineText value={customer.name} onSave={saveName} ariaLabel="name" readOnly={isArchived} />
               </span>
-              <TypeChanger value={customer.type} onChange={(type) => void patch({ type }).catch(() => {})} />
-              <StatusChanger customer={customer} />
+              <TypeChanger
+                value={customer.type}
+                onChange={(type) => void patch({ type }).catch(() => {})}
+                readOnly={isArchived}
+              />
+              <StatusChanger customer={customer} readOnly={isArchived} />
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
               {isBusiness ? (
@@ -152,15 +185,32 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <Tooltip content="Archive">
-            <Button
-              variant="ghost"
-              onPress={() => setConfirmingArchive(true)}
-              aria-label="Archive customer"
-            >
-              <i className="fa-solid fa-box-archive" aria-hidden />
-            </Button>
-          </Tooltip>
+          {isArchived ? (
+            <>
+              <Button variant="secondary" onPress={onRestore} isPending={restoring}>
+                <i className="fa-solid fa-arrow-rotate-left" aria-hidden />
+                Restore
+              </Button>
+              <Button
+                variant="destructive"
+                onPress={() => setConfirmingDelete(true)}
+                isDisabled={restoring}
+              >
+                <i className="fa-solid fa-trash" aria-hidden />
+                Delete permanently
+              </Button>
+            </>
+          ) : (
+            <Tooltip content="Archive">
+              <Button
+                variant="ghost"
+                onPress={() => setConfirmingArchive(true)}
+                aria-label="Archive customer"
+              >
+                <i className="fa-solid fa-box-archive" aria-hidden />
+              </Button>
+            </Tooltip>
+          )}
         </div>
       </header>
 
@@ -180,6 +230,23 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
         onConfirm={onArchive}
       />
 
+      <ConfirmDialog
+        isOpen={confirmingDelete}
+        onOpenChange={setConfirmingDelete}
+        title="Delete customer permanently"
+        description={
+          <>
+            Permanently delete{' '}
+            <span className="font-medium text-slate-900 dark:text-slate-100">{customer.name}</span>?
+            This also removes all notes and activity, and can't be undone.
+          </>
+        }
+        confirmLabel="Delete permanently"
+        confirmVariant="destructive"
+        isPending={deleting}
+        onConfirm={onDelete}
+      />
+
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-1">
           <Card title="Contact">
@@ -192,10 +259,15 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
                   type="email"
                   placeholder="hello@acme.com"
                   emptyLabel="Add email"
+                  readOnly={isArchived}
                 />
               </Field>
               <Field label="Phone">
-                <PhoneEditor phone={customer.phone} onSave={(phone) => patch({ phone })} />
+                <PhoneEditor
+                  phone={customer.phone}
+                  onSave={(phone) => patch({ phone })}
+                  readOnly={isArchived}
+                />
               </Field>
               {isBusiness && (
                 <Field label="Website">
@@ -205,11 +277,16 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
                     ariaLabel="website"
                     placeholder="acme.com"
                     emptyLabel="Add website"
+                    readOnly={isArchived}
                   />
                 </Field>
               )}
               <Field label="Address">
-                <AddressEditor address={customer.address} onSave={(address) => patch({ address })} />
+                <AddressEditor
+                  address={customer.address}
+                  onSave={(address) => patch({ address })}
+                  readOnly={isArchived}
+                />
               </Field>
             </dl>
           </Card>
@@ -222,6 +299,7 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
                   items={sourceOptions}
                   value={customer.source}
                   onSave={(value) => patch({ source: value as CustomerSource })}
+                  readOnly={isArchived}
                 />
               </Field>
               <Field label="Created">{dayjs(customer.createdAtUtc).format(DATETIME_FORMAT)}</Field>
@@ -234,7 +312,7 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
 
         <div className="flex flex-col gap-6 lg:col-span-2">
           <ActivityTimeline customerId={customer.id} />
-          <NotesSection customerId={customer.id} />
+          <NotesSection customerId={customer.id} readOnly={isArchived} />
           {isBusiness && (
             <EmptySection
               title="Contacts"

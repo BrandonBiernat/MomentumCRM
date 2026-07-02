@@ -8,6 +8,12 @@ public class CustomerAlreadyExistsException(string email) :
 public class CustomerNotFoundException(Guid id) :
     Exception($"Customer with id '{id}' was not found");
 
+public class CustomerArchivedException(Guid id) :
+    Exception($"Customer with id '{id}' is archived and cannot be modified");
+
+public class CustomerRestoreConflictException(string value) :
+    Exception($"Cannot restore: another active customer already uses '{value}'");
+
 public class CustomerHasNoContactInfoException() :
     Exception($"Customer must have a phone number or email");
 
