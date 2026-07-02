@@ -60,5 +60,16 @@ namespace Api.Controllers {
             Guid id,
             PatchCustomerRequest request,
             CancellationToken ct) => Ok(await customers.PatchAsync(id, request, ct));
+
+        [HttpPost("{id:guid}/status")]
+        public async Task<ActionResult<CustomerResponse>> ChangeStatus(
+            Guid id,
+            ChangeStatusRequest request,
+            CancellationToken ct) => Ok(await customers.ChangeStatusAsync(id, request, ct));
+
+        [HttpGet("{id:guid}/activity")]
+        public async Task<ActionResult<IReadOnlyList<CustomerActivityResponse>>> GetActivity(
+            Guid id,
+            CancellationToken ct) => Ok(await customers.GetActivityAsync(id, ct));
     }
 }

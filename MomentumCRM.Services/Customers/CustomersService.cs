@@ -2,15 +2,18 @@ using Microsoft.EntityFrameworkCore;
 using MomentumCRM.Persistence.Abstractions;
 using MomentumCRM.Persistence.Contexts;
 using MomentumCRM.Persistence.Entities;
+using MomentumCRM.Persistence.Entities.Customers;
 using MomentumCRM.Persistence.Enums.Customers;
 using MomentumCRM.Services.Common.Exceptions;
 using MomentumCRM.Services.Customers.Dtos;
+using MomentumCRM.Services.Events;
 
 namespace MomentumCRM.Services.Customers;
 
 public class CustomersService(
     MomentumCrmDbContext db,
-    ICurrentUser currentUser) : ICustomersService {
+    ICurrentUser currentUser,
+    IEventPublisher events) : ICustomersService {
     public async Task<CustomerResponse> CreateAsync(
         CreateCustomerRequest request,
         CancellationToken ct = default) {
@@ -32,6 +35,9 @@ public class CustomersService(
             source: request.Source);
 
         db.Customers.Add(newCustomer);
+        await events.PublishAsync(
+            new CustomerCreated(newCustomer.Id.Value, newCustomer.Status, currentUser.Id), ct);
+            
         await db.SaveChangesAsync(ct);
 
         return CustomerResponse.FromEntity(newCustomer);
@@ -82,8 +88,6 @@ public class CustomersService(
             customer.ChangeType(request.Type.Value);
         if (request.Source is not null)
             customer.ChangeSource(request.Source.Value);
-        if (request.Status is not null)
-            customer.ChangeStatus(request.Status.Value);
 
         if (request.Email.HasValue) {
             string? email = request.Email.Value?.Trim().ToLower();
@@ -108,6 +112,45 @@ public class CustomersService(
 
         await db.SaveChangesAsync(ct);
         return CustomerResponse.FromEntity(customer);
+    }
+
+    public async Task<CustomerResponse> ChangeStatusAsync(
+        Guid id,
+        ChangeStatusRequest request,
+        CancellationToken ct = default) {
+        Customer customer = await db.Customers
+            .FindAsync([new CustomerId(id)], ct)
+                ?? throw new CustomerNotFoundException(id);
+
+        if (customer.Status == request.Status)
+            return CustomerResponse.FromEntity(customer);
+
+        if (!customer.CanTransitionTo(request.Status))
+            throw new InvalidStatusTransitionException(customer.Status, request.Status);
+        if (request.Status == CustomerStatus.Inactive && string.IsNullOrWhiteSpace(request.Reason))
+            throw new StatusChangeReasonRequiredException();
+
+        CustomerStatus from = customer.Status;
+        customer.ChangeStatus(request.Status);
+
+        await events.PublishAsync(
+            new CustomerStatusChanged(customer.Id.Value, from, request.Status, request.Reason, currentUser.Id),
+            ct);
+
+        await db.SaveChangesAsync(ct);
+        return CustomerResponse.FromEntity(customer);
+    }
+
+    public async Task<IReadOnlyList<CustomerActivityResponse>> GetActivityAsync(
+        Guid id,
+        CancellationToken ct = default) {
+        CustomerId customerId = new(id);
+        List<CustomerActivity> activities = await db.CustomerActivities
+            .AsNoTracking()
+            .Where(a => a.CustomerId == customerId)
+            .OrderByDescending(a => a.OccurredAtUtc)
+            .ToListAsync(ct);
+        return [.. activities.Select(CustomerActivityResponse.FromEntity)];
     }
 
     public async Task ArchiveAsync(

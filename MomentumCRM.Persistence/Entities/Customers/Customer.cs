@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MomentumCRM.Persistence.Abstractions;
+using MomentumCRM.Persistence.Entities;
 using MomentumCRM.Persistence.Enums.Customers;
 
-namespace MomentumCRM.Persistence.Entities;
+namespace MomentumCRM.Persistence.Entities.Customers;
 
 public readonly record struct CustomerId(Guid Value) {
     public static CustomerId New() => new(Guid.CreateVersion7());
@@ -89,8 +90,6 @@ public class Customer : IEntity<CustomerId>, IAuditable {
         Status = status;
     }
 
-    // The status lifecycle state machine. Any-to-any is not allowed; these are
-    // the transitions the pipeline permits.
     private static readonly IReadOnlyDictionary<CustomerStatus, CustomerStatus[]> AllowedStatusTransitions =
         new Dictionary<CustomerStatus, CustomerStatus[]> {
             [CustomerStatus.Lead] = [CustomerStatus.Prospect, CustomerStatus.Inactive],

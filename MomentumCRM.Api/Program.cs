@@ -10,6 +10,8 @@ using MomentumCRM.Persistence.Contexts;
 using MomentumCRM.Persistence.Entities.User;
 using MomentumCRM.Services.Auth;
 using MomentumCRM.Services.Customers;
+using MomentumCRM.Services.Customers.Handlers;
+using MomentumCRM.Services.Events;
 using MomentumCRM.Services.Settings;
 using Serilog;
 
@@ -97,7 +99,14 @@ try {
     builder.Services.AddScoped<ITokenService, JwtTokenService>();
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<ICustomersService, CustomersService>();
+    builder.Services.AddScoped<INotesService, NotesService>();
     builder.Services.AddScoped<ISettingsService, SettingsService>();
+
+    builder.Services.AddScoped<IEventPublisher, EventPublisher>();
+    builder.Services.AddScoped<IEventHandler<CustomerCreated>, CustomerActivityHandler>();
+    builder.Services.AddScoped<IEventHandler<CustomerStatusChanged>, CustomerActivityHandler>();
+    builder.Services.AddScoped<IEventHandler<NoteAdded>, CustomerActivityHandler>();
+    builder.Services.AddScoped<IEventHandler<NoteRemoved>, CustomerActivityHandler>();
 
     WebApplication app = builder.Build();
 

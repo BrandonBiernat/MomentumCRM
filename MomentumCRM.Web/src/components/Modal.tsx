@@ -17,9 +17,9 @@ export const Modal = ({ title, children, ...props }: ModalProps) => (
   <ModalOverlay
     isDismissable
     {...props}
-    className="fixed inset-0 z-50 flex min-h-full items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm transition-opacity duration-200 data-[entering]:opacity-0 data-[exiting]:opacity-0"
+    className="fixed inset-0 z-50 flex min-h-full items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm transition-opacity duration-200 data-[entering]:opacity-0 data-[exiting]:opacity-0"
   >
-    <AriaModal className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl transition duration-200 data-[entering]:scale-95 data-[entering]:opacity-0 data-[exiting]:scale-95 data-[exiting]:opacity-0 dark:bg-slate-900">
+    <AriaModal className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl transition duration-200 data-[entering]:scale-95 data-[entering]:opacity-0 data-[exiting]:scale-95 data-[exiting]:opacity-0 dark:border-slate-700 dark:bg-slate-900">
       <Dialog className="outline-none">
         {({ close }) => (
           <>

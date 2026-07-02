@@ -7,7 +7,6 @@ public record PatchCustomerRequest(
     string? Name,
     CustomerType? Type,
     CustomerSource? Source,
-    CustomerStatus? Status,
     Optional<string> Email,
     Optional<string> Domain,
     Optional<UpdatePhoneRequest> Phone,

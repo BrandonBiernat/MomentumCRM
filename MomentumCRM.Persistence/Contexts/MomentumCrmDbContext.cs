@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MomentumCRM.Persistence.Abstractions;
 using MomentumCRM.Persistence.Entities;
+using MomentumCRM.Persistence.Entities.Customers;
 using MomentumCRM.Persistence.Enums.Customers;
 
 namespace MomentumCRM.Persistence.Contexts;
@@ -18,6 +19,8 @@ public class MomentumCrmDbContext : DbContext {
     protected MomentumCrmDbContext() { }
 
     public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<CustomerActivity> CustomerActivities => Set<CustomerActivity>();
+    public DbSet<CustomerNote> CustomerNotes => Set<CustomerNote>();
 
     public override int SaveChanges() {
         StampAudit();
@@ -49,6 +52,9 @@ public class MomentumCrmDbContext : DbContext {
         configurationBuilder.Properties<CustomerType>().HaveConversion<string>().HaveMaxLength(20);
         configurationBuilder.Properties<CustomerSource>().HaveConversion<string>().HaveMaxLength(20);
         configurationBuilder.Properties<CustomerStatus>().HaveConversion<string>().HaveMaxLength(20);
+        configurationBuilder.Properties<CustomerActivityType>().HaveConversion<string>().HaveMaxLength(30);
+        configurationBuilder.Properties<CustomerActivityId>().HaveConversion<CustomerActivityId.EFConverter>();
+        configurationBuilder.Properties<CustomerNoteId>().HaveConversion<CustomerNoteId.EFConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
@@ -64,5 +70,23 @@ public class MomentumCrmDbContext : DbContext {
         modelBuilder.Entity<Customer>()
             .HasIndex(c => c.Domain).IsUnique()
             .HasFilter("\"ArchivedAtUtc\" IS NULL");
+
+        modelBuilder.Entity<CustomerActivity>(activity => {
+            activity.Property(a => a.Data).HasColumnType("jsonb");
+            activity.HasIndex(a => a.CustomerId);
+            activity.HasOne<Customer>()
+                .WithMany()
+                .HasForeignKey(a => a.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CustomerNote>(note => {
+            note.Property(n => n.Body).HasMaxLength(4000);
+            note.HasIndex(n => n.CustomerId);
+            note.HasOne<Customer>()
+                .WithMany()
+                .HasForeignKey(n => n.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

@@ -1,10 +1,15 @@
 import type {
+    AddNoteRequest,
+    ChangeStatusRequest,
     CreateCustomerRequest,
     Customer,
+    CustomerActivity,
+    CustomerNote,
     CustomerStatus,
     CustomerSummary,
     PatchCustomerRequest,
     UpdateCustomerRequest,
+    UpdateNoteRequest,
 } from "../../types/customer";
 import { baseApi } from "../baseApi";
 
@@ -36,6 +41,15 @@ export const customersApi = baseApi.injectEndpoints({
             query: (id) => `api/customers/${id}`,
             providesTags: (_r, _e, id) => [{ type: 'Customer', id }],
         }),
+        getCustomerActivity: builder.query<CustomerActivity[], string>({
+            query: (id) => `api/customers/${id}/activity`,
+            providesTags: (_r, _e, id) => [{ type: 'CustomerActivity', id }]
+        }),
+        getCustomerNotes: builder.query<CustomerNote[], string>({
+            query: (customerId) => `api/customers/${customerId}/notes`,
+            providesTags: (_r, _e, customerId) => [{ type: 'CustomerNote', id: customerId }]
+        }),
+        
         createCustomer: builder.mutation<Customer, CreateCustomerRequest>({
             query: (body) => ({
                 url: 'api/customers',
@@ -86,6 +100,51 @@ export const customersApi = baseApi.injectEndpoints({
             },
             invalidatesTags: (_r, _e, { id }) => [{ type: 'Customer', id }, LIST, SUMMARY]
         }),
+        changeCustomerStatus: builder.mutation<Customer, { id: string, body: ChangeStatusRequest }>({
+            query: ({ id, body }) => ({
+                url: `api/customers/${id}/status`,
+                method: 'POST',
+                body
+            }),
+            // Refresh the customer (new status), the list/summary counts, and
+            // the activity timeline (a new entry was logged).
+            invalidatesTags: (_r, _e, { id }) => [
+                { type: 'Customer', id },
+                { type: 'CustomerActivity', id },
+                LIST,
+                SUMMARY,
+            ]
+        }),
+        addCustomerNote: builder.mutation<CustomerNote, { customerId: string, body: AddNoteRequest }>({
+            query: ({ customerId, body }) => ({
+                url: `api/customers/${customerId}/notes`,
+                method: 'POST',
+                body
+            }),
+            // A new note also logs a NoteAdded activity, so refresh both.
+            invalidatesTags: (_r, _e, { customerId }) => [
+                { type: 'CustomerNote', id: customerId },
+                { type: 'CustomerActivity', id: customerId },
+            ]
+        }),
+        updateCustomerNote: builder.mutation<CustomerNote, { customerId: string, noteId: string, body: UpdateNoteRequest }>({
+            query: ({ customerId, noteId, body }) => ({
+                url: `api/customers/${customerId}/notes/${noteId}`,
+                method: 'PUT',
+                body
+            }),
+            invalidatesTags: (_r, _e, { customerId }) => [{ type: 'CustomerNote', id: customerId }]
+        }),
+        deleteCustomerNote: builder.mutation<void, { customerId: string, noteId: string }>({
+            query: ({ customerId, noteId }) => ({
+                url: `api/customers/${customerId}/notes/${noteId}`,
+                method: 'DELETE'
+            }),
+            invalidatesTags: (_r, _e, { customerId }) => [
+                { type: 'CustomerNote', id: customerId },
+                { type: 'CustomerActivity', id: customerId },
+            ]
+        }),
     }),
     overrideExisting: false,
 })
@@ -100,5 +159,13 @@ export const {
     useRestoreCustomerMutation,
 
     useUpdateCustomerMutation,
-    usePatchCustomerMutation
+    usePatchCustomerMutation,
+
+    useChangeCustomerStatusMutation,
+    useGetCustomerActivityQuery,
+
+    useGetCustomerNotesQuery,
+    useAddCustomerNoteMutation,
+    useUpdateCustomerNoteMutation,
+    useDeleteCustomerNoteMutation
 } = customersApi;

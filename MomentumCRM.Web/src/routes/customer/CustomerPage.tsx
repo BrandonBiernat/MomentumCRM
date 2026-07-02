@@ -1,42 +1,26 @@
-import { type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
-import { Avatar, Badge, Button, Spinner, toast, type SelectOption } from '../../components'
+import { Avatar, Button, ConfirmDialog, Spinner, Tooltip, toast } from '../../components'
 import {
   useArchiveCustomerMutation,
   useGetCustomerByIdQuery,
   usePatchCustomerMutation,
 } from '../../services'
-import type {
-  Customer,
-  CustomerSource,
-  CustomerStatus,
-  CustomerType,
-  PatchCustomerRequest,
-} from '../../types/customer'
-import { getFormErrorMessage, sourceOptions, typeOptions } from './components/customerFormShared'
+import type { Customer, CustomerSource, PatchCustomerRequest } from '../../types/customer'
+import { getFormErrorMessage, sourceOptions } from './components/customerFormShared'
 import {
   AddressEditor,
   InlineSelectField,
   InlineText,
   PhoneEditor,
 } from './components/inlineFields'
+import { StatusChanger } from './components/StatusChanger'
+import { TypeChanger } from './components/TypeChanger'
+import { ActivityTimeline } from './components/ActivityTimeline'
+import { NotesSection } from './components/NotesSection'
 
 const DATETIME_FORMAT = 'MMM D, YYYY h:mm A'
-
-const statusColor: Record<CustomerStatus, 'amber' | 'violet' | 'green' | 'gray'> = {
-  Lead: 'amber',
-  Prospect: 'violet',
-  Active: 'green',
-  Inactive: 'gray',
-}
-
-const statusOptions: SelectOption[] = [
-  { id: 'Lead', label: 'Lead' },
-  { id: 'Prospect', label: 'Prospect' },
-  { id: 'Active', label: 'Active' },
-  { id: 'Inactive', label: 'Inactive' },
-]
 
 const BackLink = () => (
   <Link
@@ -81,6 +65,7 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
   const navigate = useNavigate()
   const [archive, { isLoading: archiving }] = useArchiveCustomerMutation()
   const [patchCustomer] = usePatchCustomerMutation()
+  const [confirmingArchive, setConfirmingArchive] = useState(false)
   const isBusiness = customer.type === 'Business'
 
   const patch = async (body: PatchCustomerRequest) => {
@@ -107,6 +92,7 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
       navigate('/customers')
     } catch {
       toast.error('Could not archive this customer.')
+      setConfirmingArchive(false)
     }
   }
 
@@ -129,8 +115,8 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
               <span className="text-xl font-semibold text-slate-900 dark:text-slate-100">
                 <InlineText value={customer.name} onSave={saveName} ariaLabel="name" />
               </span>
-              <Badge color={isBusiness ? 'violet' : 'gray'}>{customer.type}</Badge>
-              <Badge color={statusColor[customer.status]}>{customer.status}</Badge>
+              <TypeChanger value={customer.type} onChange={(type) => void patch({ type }).catch(() => {})} />
+              <StatusChanger customer={customer} />
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
               {isBusiness ? (
@@ -166,19 +152,33 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <div className="w-40">
-            <InlineSelectField
-              ariaLabel="Status"
-              items={statusOptions}
-              value={customer.status}
-              onSave={(value) => patch({ status: value as CustomerStatus })}
-            />
-          </div>
-          <Button variant="ghost" onPress={onArchive} isPending={archiving} aria-label="Archive customer">
-            <i className="fa-solid fa-box-archive" aria-hidden />
-          </Button>
+          <Tooltip content="Archive">
+            <Button
+              variant="ghost"
+              onPress={() => setConfirmingArchive(true)}
+              aria-label="Archive customer"
+            >
+              <i className="fa-solid fa-box-archive" aria-hidden />
+            </Button>
+          </Tooltip>
         </div>
       </header>
+
+      <ConfirmDialog
+        isOpen={confirmingArchive}
+        onOpenChange={setConfirmingArchive}
+        title="Archive customer"
+        description={
+          <>
+            Archive <span className="font-medium text-slate-900 dark:text-slate-100">{customer.name}</span>?
+            They'll be hidden from the customers list but can be restored later.
+          </>
+        }
+        confirmLabel="Archive"
+        confirmVariant="destructive"
+        isPending={archiving}
+        onConfirm={onArchive}
+      />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-1">
@@ -216,14 +216,6 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
 
           <Card title="Details">
             <dl className="flex flex-col gap-4">
-              <Field label="Type">
-                <InlineSelectField
-                  ariaLabel="Type"
-                  items={typeOptions}
-                  value={customer.type}
-                  onSave={(value) => patch({ type: value as CustomerType })}
-                />
-              </Field>
               <Field label="Source">
                 <InlineSelectField
                   ariaLabel="Source"
@@ -241,16 +233,8 @@ const CustomerView = ({ customer }: { customer: Customer }) => {
         </div>
 
         <div className="flex flex-col gap-6 lg:col-span-2">
-          <EmptySection
-            title="Activity"
-            icon="fa-wave-square"
-            hint="Calls, emails, and status changes will show up here."
-          />
-          <EmptySection
-            title="Notes"
-            icon="fa-note-sticky"
-            hint="Jot down anything worth remembering about this customer."
-          />
+          <ActivityTimeline customerId={customer.id} />
+          <NotesSection customerId={customer.id} />
           {isBusiness && (
             <EmptySection
               title="Contacts"

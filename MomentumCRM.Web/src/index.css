@@ -91,6 +91,15 @@ body {
 
 /* Toast enter/exit. React Aria keeps an exiting toast mounted until its
    animation ends, so the slide-out plays before the element is removed. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes toast-in {
   from {
     opacity: 0;

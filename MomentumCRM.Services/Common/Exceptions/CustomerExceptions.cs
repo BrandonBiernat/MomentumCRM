@@ -16,3 +16,6 @@ public class InvalidStatusTransitionException(CustomerStatus from, CustomerStatu
 
 public class StatusChangeReasonRequiredException() :
     Exception("A reason is required when marking a customer inactive");
+
+public class NoteNotFoundException(Guid id) :
+    Exception($"Note with id '{id}' was not found");

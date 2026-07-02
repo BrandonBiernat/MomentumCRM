@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using MomentumCRM.Persistence.Entities;
+using MomentumCRM.Persistence.Entities.Customers;
 using MomentumCRM.Persistence.Enums.Customers;
 
 namespace MomentumCRM.Services.Customers.Dtos;

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MomentumCRM.Persistence.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MomentumCRM.Persistence.Migrations
 {
     [DbContext(typeof(MomentumCrmDbContext))]
-    partial class MomentumCrmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260702033354_AddCustomerActivity")]
+    partial class AddCustomerActivity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,7 +25,7 @@ namespace MomentumCRM.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("MomentumCRM.Persistence.Entities.Customers.Customer", b =>
+            modelBuilder.Entity("MomentumCRM.Persistence.Entities.Customer", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -83,7 +86,7 @@ namespace MomentumCRM.Persistence.Migrations
                     b.ToTable("Customers");
                 });
 
-            modelBuilder.Entity("MomentumCRM.Persistence.Entities.Customers.CustomerActivity", b =>
+            modelBuilder.Entity("MomentumCRM.Persistence.Entities.CustomerActivity", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -112,39 +115,7 @@ namespace MomentumCRM.Persistence.Migrations
                     b.ToTable("CustomerActivities");
                 });
 
-            modelBuilder.Entity("MomentumCRM.Persistence.Entities.Customers.CustomerNote", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Body")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.ToTable("CustomerNotes");
-                });
-
-            modelBuilder.Entity("MomentumCRM.Persistence.Entities.Customers.Customer", b =>
+            modelBuilder.Entity("MomentumCRM.Persistence.Entities.Customer", b =>
                 {
                     b.OwnsOne("MomentumCRM.Persistence.Entities.Address", "Address", b1 =>
                         {
@@ -204,18 +175,9 @@ namespace MomentumCRM.Persistence.Migrations
                     b.Navigation("Phone");
                 });
 
-            modelBuilder.Entity("MomentumCRM.Persistence.Entities.Customers.CustomerActivity", b =>
+            modelBuilder.Entity("MomentumCRM.Persistence.Entities.CustomerActivity", b =>
                 {
-                    b.HasOne("MomentumCRM.Persistence.Entities.Customers.Customer", null)
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("MomentumCRM.Persistence.Entities.Customers.CustomerNote", b =>
-                {
-                    b.HasOne("MomentumCRM.Persistence.Entities.Customers.Customer", null)
+                    b.HasOne("MomentumCRM.Persistence.Entities.Customer", null)
                         .WithMany()
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)

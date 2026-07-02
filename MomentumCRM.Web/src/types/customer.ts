@@ -36,16 +36,54 @@ export type CreateCustomerRequest = {
 }
 
 // Partial update. Omit a key to leave it unchanged; send null to clear
-// (email/phone/domain/address only — name/type/source/status can't be cleared).
+// (email/phone/domain/address only). Status is NOT here — it goes through the
+// status workflow endpoint so transitions are validated and logged.
 export type PatchCustomerRequest = {
     name?: string
     type?: CustomerType
     source?: CustomerSource
-    status?: CustomerStatus
     email?: string | null
     domain?: string | null
     phone?: Phone | null
     address?: Address | null
+}
+
+export type ChangeStatusRequest = {
+    status: CustomerStatus
+    reason?: string
+}
+
+// The status lifecycle state machine — mirrors the server's rules so the UI
+// only offers valid next steps.
+export const allowedStatusTransitions: Record<CustomerStatus, CustomerStatus[]> = {
+    Lead: ['Prospect', 'Inactive'],
+    Prospect: ['Lead', 'Active', 'Inactive'],
+    Active: ['Inactive'],
+    Inactive: ['Lead', 'Prospect', 'Active'],
+}
+
+export const statusReasonRequired = (status: CustomerStatus): boolean => status === 'Inactive'
+
+export type CustomerActivityType = 'Created' | 'StatusChanged' | 'NoteAdded' | 'NoteRemoved'
+
+export type CustomerNote = {
+    id: string
+    body: string
+    createdBy: string | null
+    createdAtUtc: string
+    updatedBy: string | null
+    updatedAtUtc: string | null
+}
+
+export type AddNoteRequest = { body: string }
+export type UpdateNoteRequest = { body: string }
+
+export type CustomerActivity = {
+    id: string
+    type: CustomerActivityType
+    data: Record<string, unknown> | null
+    actorId: string | null
+    occurredAtUtc: string
 }
 
 export type CustomerSummary = {
