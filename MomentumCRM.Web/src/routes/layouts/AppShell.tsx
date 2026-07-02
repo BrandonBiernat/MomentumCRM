@@ -6,7 +6,7 @@ import {
   MenuTrigger,
   Popover,
 } from 'react-aria-components'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import logoUrl from '../../assets/momentum horizontal text purple logo.png'
 import { Avatar, SearchInput } from '../../components'
 import { useLogoutMutation } from '../../services'
@@ -18,6 +18,7 @@ export const AppShell = () => {
   const user = useAppSelector(selectAuthUser)
   const [logout] = useLogoutMutation()
   const navigate = useNavigate()
+  const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const onLogout = async () => {
@@ -86,7 +87,9 @@ export const AppShell = () => {
 
       <Sidebar open={sidebarOpen} />
       <main className="min-w-0 overflow-y-auto">
-        <Outlet />
+        <div key={location.pathname} className="page-enter h-full">
+          <Outlet />
+        </div>
       </main>
     </div>
   )

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useImperativeHandle, useMemo, useState, type ReactNode, type Ref } from 'react'
 import {
   Table as AriaTable,
   TableHeader,
@@ -17,7 +17,7 @@ import { ColumnHeader } from './ColumnHeader'
 import { TableToolbar } from './TableToolbar'
 import { resolveColumn, alignText, cssWidth, toRacWidth } from './columns'
 import { exportTableToExcel } from './tableExport'
-import type { TableColumn, TableToolbarApi } from './types'
+import type { TableColumn, TableRef, TableToolbarApi } from './types'
 
 interface TableProps<T> {
   'aria-label': string
@@ -34,6 +34,7 @@ interface TableProps<T> {
   isVirtualized?: boolean
   height?: number | string
   rowHeight?: number
+  ref?: Ref<TableRef>
 }
 
 // React Aria's Column/Row/Cell must stay rendered inline here — the table
@@ -52,6 +53,7 @@ export const Table = <T,>({
   isVirtualized = false,
   height,
   rowHeight = 44,
+  ref,
   ...props
 }: TableProps<T>) => {
   // Virtualized without an explicit height → fill the parent container.
@@ -84,6 +86,8 @@ export const Table = <T,>({
     },
     [columns, displayed, exportFileName],
   )
+
+  useImperativeHandle(ref, () => ({ exportExcel }), [exportExcel])
 
   const toolbarContent =
     typeof toolbar === 'function' ? toolbar({ rows: displayed, exportExcel }) : toolbar

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Dialog, DialogTrigger, Popover } from 'react-aria-components'
 import {
@@ -13,6 +13,7 @@ import {
   Tabs,
   type TabItem,
   type TableColumn,
+  type TableRef,
 } from '../../components'
 import { useGetCustomerSummaryQuery, useGetCustomersQuery } from '../../services'
 import type { Customer, CustomerStatus, CustomerType } from '../../types/customer'
@@ -97,6 +98,7 @@ export const CustomersIndex = () => {
   const [showArchived, setShowArchived] = useState(false)
   const [typeFilter, setTypeFilter] = useState<CustomerType | 'all'>('all')
   const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set())
+  const tableRef = useRef<TableRef>(null)
 
   const { data: customers, isLoading } = useGetCustomersQuery({
     status: tabStatus[tab],
@@ -140,6 +142,14 @@ export const CustomersIndex = () => {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Customers</h1>
         <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onPress={() => tableRef.current?.exportExcel('customers')}
+          >
+            <i className="fa-solid fa-file-excel" aria-hidden />
+            Export
+          </Button>
           <DialogTrigger>
             <Button variant="secondary" size="sm">
               <i className="fa-solid fa-filter" aria-hidden />
@@ -201,6 +211,7 @@ export const CustomersIndex = () => {
           </div>
         ) : (
           <Table
+            ref={tableRef}
             columns={visibleColumns}
             aria-label="Customers"
             items={items}

@@ -49,3 +49,9 @@ export interface TableToolbarApi<T> {
   rows: T[]
   exportExcel: (fileName?: string) => void
 }
+
+// Imperative handle exposed via the Table's `ref` — lets a parent trigger the
+// Excel export (respecting the table's current search/sort) from its own UI.
+export interface TableRef {
+  exportExcel: (fileName?: string) => void
+}
