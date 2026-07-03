@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using MomentumCRM.Persistence.Entities;
 using MomentumCRM.Persistence.Entities.Customers;
 using MomentumCRM.Persistence.Enums.Customers;
@@ -31,5 +32,6 @@ public record UpdateCustomerRequest(
     UpdatePhoneRequest? Phone,
     string? Domain,
     UpdateAddressRequest? Address,
-    CustomerSource? Source
+    CustomerSource? Source,
+    IReadOnlyDictionary<string, JsonElement>? CustomFields
 );

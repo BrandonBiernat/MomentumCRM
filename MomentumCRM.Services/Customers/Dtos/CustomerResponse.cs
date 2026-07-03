@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MomentumCRM.Persistence.Entities;
 using MomentumCRM.Persistence.Entities.Customers;
 using MomentumCRM.Persistence.Enums.Customers;
@@ -33,6 +34,7 @@ public record CustomerResponse(
     CustomerType Type,
     CustomerSource Source,
     CustomerStatus Status,
+    IReadOnlyDictionary<string, JsonElement> CustomFields,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc,
     DateTime? ArchivedAtUtc
@@ -52,6 +54,7 @@ public record CustomerResponse(
             c.Type,
             c.Source,
             c.Status,
+            c.CustomFields.Values,
             c.CreatedAtUtc,
             c.UpdatedAtUtc,
             c.ArchivedAtUtc);

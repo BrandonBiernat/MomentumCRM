@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MomentumCRM.Persistence.Enums.Customers;
 using MomentumCRM.Services.Common;
 
@@ -10,4 +11,5 @@ public record PatchCustomerRequest(
     Optional<string> Email,
     Optional<string> Domain,
     Optional<UpdatePhoneRequest> Phone,
-    Optional<UpdateAddressRequest> Address);
+    Optional<UpdateAddressRequest> Address,
+    IReadOnlyDictionary<string, JsonElement>? CustomFields);

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using MomentumCRM.Persistence.Entities;
 using MomentumCRM.Persistence.Entities.Customers;
 using MomentumCRM.Persistence.Enums.Customers;
@@ -18,4 +19,5 @@ public record CreateCustomerRequest(
     [Required] CustomerType Type,
     [Required] CustomerSource Source,
     [EmailAddress] string? Email,
-    CreatePhoneRequest? Phone);
+    CreatePhoneRequest? Phone,
+    IReadOnlyDictionary<string, JsonElement>? CustomFields);

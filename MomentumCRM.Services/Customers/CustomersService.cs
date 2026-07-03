@@ -1,10 +1,13 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using MomentumCRM.Persistence.Abstractions;
 using MomentumCRM.Persistence.Contexts;
 using MomentumCRM.Persistence.Entities;
 using MomentumCRM.Persistence.Entities.Customers;
+using MomentumCRM.Persistence.Enums.CustomFields;
 using MomentumCRM.Persistence.Enums.Customers;
 using MomentumCRM.Services.Common.Exceptions;
+using MomentumCRM.Services.CustomFields;
 using MomentumCRM.Services.Customers.Dtos;
 using MomentumCRM.Services.Events;
 
@@ -13,7 +16,11 @@ namespace MomentumCRM.Services.Customers;
 public class CustomersService(
     MomentumCrmDbContext db,
     ICurrentUser currentUser,
-    IEventPublisher events) : ICustomersService {
+    IEventPublisher events,
+    ICustomFieldWriter customFields) : ICustomersService {
+    private static readonly IReadOnlyDictionary<string, JsonElement> NoCustomFields =
+        new Dictionary<string, JsonElement>();
+
     public async Task<CustomerResponse> CreateAsync(
         CreateCustomerRequest request,
         CancellationToken ct = default) {
@@ -33,6 +40,9 @@ public class CustomersService(
             email: request.Email,
             phone: request.Phone?.ToValueObject(),
             source: request.Source);
+
+        await customFields.ApplyAsync(
+            newCustomer, CustomFieldTarget.Customer, request.CustomFields ?? NoCustomFields, ct);
 
         db.Customers.Add(newCustomer);
         await events.PublishAsync(
@@ -73,6 +83,9 @@ public class CustomersService(
         customer.ChangeAddress(request.Address?.ToValueObject());
         customer.ChangeType(request.Type);
 
+        await customFields.ApplyAsync(
+            customer, CustomFieldTarget.Customer, request.CustomFields ?? NoCustomFields, ct);
+
         await db.SaveChangesAsync(ct);
         return CustomerResponse.FromEntity(customer);
     }
@@ -112,6 +125,10 @@ public class CustomersService(
             customer.ChangePhone(request.Phone.Value?.ToValueObject());
         if (request.Address.HasValue)
             customer.ChangeAddress(request.Address.Value?.ToValueObject());
+
+        if (request.CustomFields is not null)
+            await customFields.ApplyAsync(
+                customer, CustomFieldTarget.Customer, request.CustomFields, ct);
 
         if (string.IsNullOrWhiteSpace(customer.Email) && customer.Phone is null)
             throw new CustomerHasNoContactInfoException();
@@ -181,9 +198,6 @@ public class CustomersService(
             .FirstOrDefaultAsync(c => c.Id == new CustomerId(id) && c.ArchivedAtUtc != null, ct)
                 ?? throw new CustomerNotFoundException(id);
 
-        // The unique Email/Domain indexes are filtered to active rows, so an
-        // active customer may have taken this one's email/domain while it was
-        // archived. Restoring would violate the index, so guard with a clear error.
         if (!string.IsNullOrWhiteSpace(customer.Email)) {
             bool emailInUse = await db.Customers
                 .AnyAsync(c => c.Email == customer.Email, ct);
