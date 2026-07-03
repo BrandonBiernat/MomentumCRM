@@ -105,6 +105,7 @@ try {
     builder.Services.AddScoped<ISettingsService, SettingsService>();
     builder.Services.AddScoped<IContactsService, ContactsService>();
     builder.Services.AddScoped<ICustomFieldWriter, CustomFieldWriter>();
+    builder.Services.AddScoped<ICustomFieldDefinitionService, CustomFieldDefinitionService>();
 
     builder.Services.AddScoped<IEventPublisher, EventPublisher>();
     builder.Services.AddScoped<IEventHandler<CustomerCreated>, CustomerActivityHandler>();

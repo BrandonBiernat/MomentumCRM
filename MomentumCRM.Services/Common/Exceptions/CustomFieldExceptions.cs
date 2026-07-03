@@ -19,3 +19,6 @@ public class CustomFieldDefinitionNotFoundException(Guid id) :
 
 public class DuplicateCustomFieldKeyException(string key) :
     Exception($"A custom field with key '{key}' already exists for this target");
+
+public class CustomFieldOptionsRequiredException(string label) :
+    Exception($"Custom field '{label}' is a select and requires at least one option");

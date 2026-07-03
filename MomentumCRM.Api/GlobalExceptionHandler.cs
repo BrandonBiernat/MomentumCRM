@@ -39,6 +39,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             RequiredCustomFieldMissingException => (StatusCodes.Status400BadRequest, exception.Message),
             CustomFieldDefinitionNotFoundException => (StatusCodes.Status404NotFound, exception.Message),
             DuplicateCustomFieldKeyException => (StatusCodes.Status409Conflict, exception.Message),
+            CustomFieldOptionsRequiredException => (StatusCodes.Status400BadRequest, exception.Message),
 
             // Phone
             InvalidPhoneNumberException => (StatusCodes.Status400BadRequest, exception.Message),
