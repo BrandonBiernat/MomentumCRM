@@ -2,7 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MomentumCRM.Persistence.Abstractions;
 using MomentumCRM.Persistence.Entities;
+using MomentumCRM.Persistence.Entities.Contacts;
+using MomentumCRM.Persistence.Entities.CustomFields;
 using MomentumCRM.Persistence.Entities.Customers;
+using MomentumCRM.Persistence.Enums.CustomFields;
 using MomentumCRM.Persistence.Enums.Customers;
 
 namespace MomentumCRM.Persistence.Contexts;
@@ -21,6 +24,8 @@ public class MomentumCrmDbContext : DbContext {
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<CustomerActivity> CustomerActivities => Set<CustomerActivity>();
     public DbSet<CustomerNote> CustomerNotes => Set<CustomerNote>();
+    public DbSet<Contact> Contacts => Set<Contact>();
+    public DbSet<CustomFieldDefinition> CustomFieldDefinitions => Set<CustomFieldDefinition>();
 
     public override int SaveChanges() {
         StampAudit();
@@ -55,10 +60,22 @@ public class MomentumCrmDbContext : DbContext {
         configurationBuilder.Properties<CustomerActivityType>().HaveConversion<string>().HaveMaxLength(30);
         configurationBuilder.Properties<CustomerActivityId>().HaveConversion<CustomerActivityId.EFConverter>();
         configurationBuilder.Properties<CustomerNoteId>().HaveConversion<CustomerNoteId.EFConverter>();
+
+        // Contact
+        configurationBuilder.Properties<ContactId>().HaveConversion<ContactId.EFConverter>();
+
+        // Custom fields
+        configurationBuilder.Properties<CustomFieldDefinitionId>()
+            .HaveConversion<CustomFieldDefinitionId.EFConverter>();
+        configurationBuilder.Properties<CustomFieldTarget>().HaveConversion<string>().HaveMaxLength(20);
+        configurationBuilder.Properties<CustomFieldType>().HaveConversion<string>().HaveMaxLength(20);
+        configurationBuilder.Properties<CustomFieldValues>()
+            .HaveConversion<CustomFieldValues.EFConverter, CustomFieldValues.EFComparer>()
+            .HaveColumnType("jsonb");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
-        // Entities
+        // Customers
         modelBuilder.Entity<Customer>().OwnsOne(c => c.Address);
         modelBuilder.Entity<Customer>().OwnsOne(c => c.Phone);
 
@@ -87,6 +104,32 @@ public class MomentumCrmDbContext : DbContext {
                 .WithMany()
                 .HasForeignKey(n => n.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Contacts
+        modelBuilder.Entity<Contact>(contact => {
+            contact.OwnsOne(c => c.Phone);
+            contact.Property(c => c.FirstName).HasMaxLength(100);
+            contact.Property(c => c.LastName).HasMaxLength(100);
+            contact.Property(c => c.PreferredName).HasMaxLength(100);
+            contact.Property(c => c.JobTitle).HasMaxLength(150);
+            contact.HasQueryFilter(c => c.ArchivedAtUtc == null);
+            contact.HasIndex(c => c.CustomerId);
+            contact.HasOne<Customer>()
+                .WithMany()
+                .HasForeignKey(c => c.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Custom Fields
+        modelBuilder.Entity<CustomFieldDefinition>(def => {
+            def.Property(d => d.Key).HasMaxLength(100);
+            def.Property(d => d.Label).HasMaxLength(150);
+            def.Property(d => d.OptionsJson).HasColumnType("jsonb");
+            def.HasQueryFilter(d => d.ArchivedAtUtc == null);
+            def.HasIndex(d => new { d.Target, d.Key })
+                .IsUnique()
+                .HasFilter("\"ArchivedAtUtc\" IS NULL");
         });
     }
 }

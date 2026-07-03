@@ -9,6 +9,8 @@ using MomentumCRM.Persistence.Abstractions;
 using MomentumCRM.Persistence.Contexts;
 using MomentumCRM.Persistence.Entities.User;
 using MomentumCRM.Services.Auth;
+using MomentumCRM.Services.Contacts;
+using MomentumCRM.Services.CustomFields;
 using MomentumCRM.Services.Customers;
 using MomentumCRM.Services.Customers.Handlers;
 using MomentumCRM.Services.Events;
@@ -101,6 +103,8 @@ try {
     builder.Services.AddScoped<ICustomersService, CustomersService>();
     builder.Services.AddScoped<INotesService, NotesService>();
     builder.Services.AddScoped<ISettingsService, SettingsService>();
+    builder.Services.AddScoped<IContactsService, ContactsService>();
+    builder.Services.AddScoped<ICustomFieldWriter, CustomFieldWriter>();
 
     builder.Services.AddScoped<IEventPublisher, EventPublisher>();
     builder.Services.AddScoped<IEventHandler<CustomerCreated>, CustomerActivityHandler>();

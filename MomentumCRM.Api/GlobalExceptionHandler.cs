@@ -27,6 +27,19 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             StatusChangeReasonRequiredException => (StatusCodes.Status400BadRequest, exception.Message),
             NoteNotFoundException => (StatusCodes.Status404NotFound, exception.Message),
 
+            // Contacts
+            ContactNotFoundException => (StatusCodes.Status404NotFound, "Contact not found"),
+            ContactArchivedException => (StatusCodes.Status409Conflict, exception.Message),
+            ContactHasNoContactInfoException => (StatusCodes.Status400BadRequest, exception.Message),
+
+            // Custom fields
+            UnknownCustomFieldException => (StatusCodes.Status400BadRequest, exception.Message),
+            CustomFieldTypeMismatchException => (StatusCodes.Status400BadRequest, exception.Message),
+            CustomFieldOptionInvalidException => (StatusCodes.Status400BadRequest, exception.Message),
+            RequiredCustomFieldMissingException => (StatusCodes.Status400BadRequest, exception.Message),
+            CustomFieldDefinitionNotFoundException => (StatusCodes.Status404NotFound, exception.Message),
+            DuplicateCustomFieldKeyException => (StatusCodes.Status409Conflict, exception.Message),
+
             // Phone
             InvalidPhoneNumberException => (StatusCodes.Status400BadRequest, exception.Message),
 

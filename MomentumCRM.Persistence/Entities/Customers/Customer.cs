@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MomentumCRM.Persistence.Abstractions;
 using MomentumCRM.Persistence.Entities;
+using MomentumCRM.Persistence.Entities.CustomFields;
 using MomentumCRM.Persistence.Enums.Customers;
 
 namespace MomentumCRM.Persistence.Entities.Customers;
@@ -15,7 +16,7 @@ public readonly record struct CustomerId(Guid Value) {
     }
 }
 
-public class Customer : IEntity<CustomerId>, IAuditable {
+public class Customer : IEntity<CustomerId>, IAuditable, IHasCustomFields {
     public CustomerId Id { get; private set; }
     public string Name { get; private set; }
     public string? Email { get; private set; }
@@ -25,6 +26,7 @@ public class Customer : IEntity<CustomerId>, IAuditable {
     public CustomerType Type { get; private set; }
     public CustomerSource Source { get; private set; }
     public CustomerStatus Status { get; private set; }
+    public CustomFieldValues CustomFields { get; private set; }
     public Guid? CreatedBy { get; private set; }
     public Guid? UpdatedBy { get; private set; }
     public Guid? ArchivedBy { get; private set; }
@@ -34,7 +36,7 @@ public class Customer : IEntity<CustomerId>, IAuditable {
 
     public bool IsArchived => ArchivedAtUtc is not null;
 
-    private Customer() { Name = null!; }
+    private Customer() { Name = null!; CustomFields = new CustomFieldValues(); }
     public Customer(
         string name,
         CustomerType type,
@@ -44,7 +46,6 @@ public class Customer : IEntity<CustomerId>, IAuditable {
     ) {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name is required", nameof(name));
-
         if (string.IsNullOrWhiteSpace(email) && phone is null)
             throw new ArgumentException("Email or Phone is required");
 
@@ -55,6 +56,7 @@ public class Customer : IEntity<CustomerId>, IAuditable {
         Type = type;
         Status = CustomerStatus.Lead;
         Source = source;
+        CustomFields = new CustomFieldValues();
         CreatedAtUtc = DateTime.UtcNow;
     }
 
